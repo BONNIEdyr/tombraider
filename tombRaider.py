@@ -19,7 +19,7 @@ def init_base_config():
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pg.display.set_caption("TombRaider")
 
-    #默认字体，可能乱码
+    # 默认字体
     main_font = pg.font.Font(None, config["ui"]["fonts"]["main_font_size"])
     label_font = pg.font.Font(None, config["ui"]["fonts"]["label_font_size"])
 
@@ -161,10 +161,10 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
             return
 
 
-def handle_chest_and_exit(player, current_room_data, game_state, config, screen, main_font, COLOR, draw_game):
+def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, screen, main_font, COLOR, draw_game):
     player_rect = get_player_rect(player)
 
-    # 简单宝箱收集检测功能
+    # 宝箱收集检测
     for chest in current_room_data.get("chests", []):
         if not chest["is_got"]:
             chest_rect = pg.Rect(chest["pos"][0] - 15, chest["pos"][1] - 15, 30, 30)
@@ -174,7 +174,7 @@ def handle_chest_and_exit(player, current_room_data, game_state, config, screen,
                 show_tip(game_state, "获得宝箱！可以去出口了！", 3)
 
     if player["current_room"] == 20 and current_room_data.get("is_exit"):
-        exit_area = config["exit_detection"]
+        exit_area = rooms_config["exit_detection"]
         exit_rect = pg.Rect(
             exit_area["x_min"],
             exit_area["y_min"],
@@ -186,7 +186,7 @@ def handle_chest_and_exit(player, current_room_data, game_state, config, screen,
             if game_state["has_treasure"]:
                 show_tip(game_state, "你赢了！", 2)
                 draw_game(screen, player, current_room_data, label_font, COLOR, minimap, room_neighbors,
-                          room_minimap_pos)
+                          room_minimap_pos, rooms_config)
                 pg.display.flip()
                 pg.time.wait(2000)
                 pg.quit()
@@ -257,7 +257,7 @@ def handle_minimap_drag(event, minimap):
         minimap["y"] = max(0, min(new_y, SCREEN_HEIGHT - minimap["h"]))
 
 
-def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, room_neighbors, room_minimap_pos):
+def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config):
     screen.fill(COLOR["WHITE"])
 
     for wall in current_room_data["walls"]:
@@ -273,7 +273,7 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
         pg.draw.circle(screen, color, chest["pos"], 15)
 
     if player["current_room"] == 20:
-        exit_area = config["exit_detection"]
+        exit_area = rooms_config["exit_detection"]
         pg.draw.rect(screen, COLOR["GREEN"],
                      (exit_area["x_min"], exit_area["y_min"],
                       SCREEN_WIDTH - exit_area["x_min"], exit_area["y_max"] - exit_area["y_min"]), 3)
@@ -296,7 +296,7 @@ def main():
     global screen, main_font, label_font, COLOR
     screen, main_font, label_font, COLOR = init_base_config()
 
-    global player, game_state, explored_rooms, room_minimap_pos, minimap, config, room_neighbors
+    global player, game_state, explored_rooms, room_minimap_pos, minimap, room_neighbors
     player, game_state, explored_rooms, room_minimap_pos = init_global_state()
     minimap = init_minimap_config()
 
@@ -339,7 +339,7 @@ def main():
         if game_state["tip_timer"] > 0:
             game_state["tip_timer"] -= 1
 
-        draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos)
+        draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
         pg.display.flip()
         clock.tick(60)
 
