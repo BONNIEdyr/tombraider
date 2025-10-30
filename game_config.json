@@ -1,0 +1,36 @@
+{
+  "ui": {
+    "colors": {
+      "WHITE": [230, 230, 230],
+      "BROWN": [139, 69, 19],
+      "GREEN": [0, 255, 0],
+      "YELLOW": [255, 200, 0],
+      "BLUE": [0, 0, 255],
+      "GRAY": [100, 100, 100],
+      "RED": [255, 0, 0],
+      "BLACK": [0, 0, 0],
+      "LIGHT_GRAY": [200, 200, 200]
+    },
+    "fonts": {
+      "main_font_size": 24,
+      "label_font_size": 16
+    }
+  },
+  "player": {
+    "radius": 15,
+    "speed": 5,
+    "initial_room": 1,
+    "initial_pos": [65, 300]
+  },
+  "minimap": {
+    "width": 150,
+    "height": 150,
+    "x": 640,
+    "y": 10,
+    "cell_size": 20
+  },
+  "game": {
+    "wall_width": 50,
+    "tip_duration": 2
+  }
+}
