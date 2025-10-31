@@ -5,7 +5,7 @@ import copy
 
 
 def load_config():
-    with open('game_config.json', 'r', encoding='utf-8') as f:
+    with open('config/game_config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
@@ -300,7 +300,7 @@ def main():
     player, game_state, explored_rooms, room_minimap_pos = init_global_state()
     minimap = init_minimap_config()
 
-    with open('rooms_config.json', 'r', encoding='utf-8') as f:
+    with open('config/rooms_config.json', 'r', encoding='utf-8') as f:
         rooms_config = json.load(f)
     rooms_config["rooms"] = [copy.deepcopy(room) for room in rooms_config["rooms"]]
     room_neighbors = rooms_config["room_neighbors"]

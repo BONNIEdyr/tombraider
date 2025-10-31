@@ -25,7 +25,11 @@
         "top": [350, 450, 25]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+      {"type": "slime", "pos": [200, 200], "hp": 1, "speed": 1},
+      {"type": "slime", "pos": [400, 300], "hp": 1, "speed": 1}
+      ]
     },
     {
       "room_id": 2,
@@ -47,7 +51,11 @@
         "right": [775, 250, 350]
       },
         "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+      {"type": "slime", "pos": [300, 150], "hp": 1, "speed": 1},
+      {"type": "bat", "pos": [500, 250], "hp": 2, "speed": 2}
+      ]
     },
     {
       "room_id": 3,
@@ -71,7 +79,12 @@
         "right": [775, 250, 350]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+      {"type": "slime", "pos": [250, 180], "hp": 1, "speed": 1},
+      {"type": "bat", "pos": [450, 250], "hp": 2, "speed": 2},
+      {"type": "slime", "pos": [600, 380], "hp": 1, "speed": 1}
+      ]
     },
     {
       "room_id": 4,
@@ -93,7 +106,12 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+      {"type": "bat", "pos": [300, 180], "hp": 2, "speed": 2},
+      {"type": "slime", "pos": [450, 300], "hp": 1, "speed": 1},
+      {"type": "wizard", "pos": [600, 250], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 5,
@@ -115,7 +133,11 @@
         "top": [350, 450, 25]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+      {"type": "slime", "pos": [250, 280], "hp": 1, "speed": 1},
+      {"type": "bat", "pos": [500, 200], "hp": 2, "speed": 2}
+      ]
     },
     {
       "room_id": 6,
@@ -141,7 +163,12 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+        {"type": "slime", "pos": [250, 180], "hp": 1, "speed": 1},
+        {"type": "slime", "pos": [300, 350], "hp": 1, "speed": 1},
+        {"type": "bat", "pos": [550, 280], "hp": 2, "speed": 2}
+      ]
     },
     {
       "room_id": 7,
@@ -165,7 +192,12 @@
         "right": [775, 250, 350]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+        {"type": "bat", "pos": [250, 200], "hp": 2, "speed": 2},
+        {"type": "bat", "pos": [520, 300], "hp": 2, "speed": 2},
+        {"type": "wizard", "pos": [600, 220], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 8,
@@ -189,7 +221,12 @@
         "right": [775, 250, 350]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+        {"type": "slime", "pos": [250, 260], "hp": 1, "speed": 1},
+        {"type": "slime", "pos": [350, 380], "hp": 1, "speed": 1},
+        {"type": "wizard", "pos": [520, 200], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 9,
@@ -212,7 +249,12 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+        {"type": "bat", "pos": [200, 180], "hp": 2, "speed": 2},
+        {"type": "slime", "pos": [350, 300], "hp": 1, "speed": 1},
+        {"type": "wizard", "pos": [650, 350], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 10,
@@ -238,7 +280,12 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+        {"type": "bat", "pos": [250, 200], "hp": 2, "speed": 2},
+        {"type": "bat", "pos": [450, 350], "hp": 2, "speed": 2},
+        {"type": "wizard", "pos": [600, 250], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 11,
@@ -263,7 +310,8 @@
       "chests": [
         {"pos": [150, 150], "is_got": false}
       ],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": []
     },
     {
       "room_id": 12,
@@ -283,7 +331,11 @@
         "right": [775, 250, 350]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+        {"type": "slime", "pos": [250, 260], "hp": 1, "speed": 1},
+        {"type": "bat", "pos": [520, 230], "hp": 2, "speed": 2}
+      ]
     },
     {
       "room_id": 13,
@@ -305,7 +357,12 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+        {"type": "slime", "pos": [200, 300], "hp": 1, "speed": 1},
+        {"type": "wizard", "pos": [600, 220], "hp": 3, "speed": 1.5},
+        {"type": "bat", "pos": [450, 350], "hp": 2, "speed": 2}
+      ]
     },
     {
       "room_id": 14,
@@ -334,7 +391,12 @@
         "top": [350, 450, 25]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+        {"type": "bat", "pos": [250, 250], "hp": 2, "speed": 2},
+        {"type": "bat", "pos": [500, 280], "hp": 2, "speed": 2},
+        {"type": "wizard", "pos": [620, 220], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 15,
@@ -357,7 +419,11 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+        {"type": "slime", "pos": [150, 300], "hp": 1, "speed": 1},
+        {"type": "wizard", "pos": [550, 200], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 16,
@@ -384,7 +450,11 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+        {"type": "bat", "pos": [300, 200], "hp": 2, "speed": 2},
+        {"type": "wizard", "pos": [500, 250], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 17,
@@ -408,7 +478,11 @@
         "top": [350, 450, 25]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+        {"type": "slime", "pos": [250, 250], "hp": 1, "speed": 1},
+        {"type": "bat", "pos": [450, 250], "hp": 2, "speed": 2}
+      ]
     },
     {
       "room_id": 18,
@@ -427,7 +501,12 @@
         "left": [25, 250, 350]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+        {"type": "slime", "pos": [250, 260], "hp": 1, "speed": 1},
+        {"type": "slime", "pos": [350, 350], "hp": 1, "speed": 1},
+        {"type": "wizard", "pos": [550, 200], "hp": 3, "speed": 1.5}
+      ]
     },
     {
       "room_id": 19,
@@ -449,7 +528,11 @@
         "bottom": [350, 450, 575]
       },
       "chests": [],
-      "is_exit": false
+      "is_exit": false,
+      "enemies": [
+        {"type": "bat", "pos": [220, 200], "hp": 2, "speed": 2},
+        {"type": "bat", "pos": [500, 320], "hp": 2, "speed": 2}
+      ]
     },
     {
       "room_id": 20,
@@ -470,29 +553,54 @@
         "top": [350, 450, 25]
       },
       "chests": [],
-      "is_exit": true
+      "is_exit": true,
+      "enemies": [
+        {"type": "wizard", "pos": [450, 200], "hp": 4, "speed": 1.5},
+        {"type": "bat", "pos": [250, 250], "hp": 2, "speed": 2},
+        {"type": "bat", "pos": [550, 300], "hp": 2, "speed": 2}
+      ]
     }
   ],
   "room_neighbors": {
-    "1": {"top": 2},
-    "2": {"bottom": 1, "right": 3},
-    "3": {"left": 2, "right": 5, "top": 4},
-    "4": {"bottom": 3, "right": 6},
-    "5": {"left": 3, "top": 6},
-    "6": {"bottom": 5, "left": 4, "right": 7, "top": 9},
-    "7": {"left": 6, "top": 8, "right": 14},
-    "8": {"bottom": 7, "right": 13, "left": 9},
-    "9": {"right": 8, "bottom": 6, "top": 10},
-    "10": {"bottom": 9, "left": 12, "top": 11},
-    "11": {"bottom": 10},
-    "12": {"right": 10},
-    "13": {"left": 8, "bottom": 14},
-    "14": {"left": 7, "top": 13, "right": 15, "bottom": 16},
-    "15": {"left": 14, "bottom": 17},
-    "16": {"top": 14, "right": 17, "bottom": 19},
-    "17": {"top": 15, "left": 16, "right": 18},
-    "18": {"left": 17},
-    "19": {"top": 16, "bottom": 20},
-    "20": {"top": 19}
-  }
+  "1":  {"top": 2},
+
+  "2":  {"bottom": 1, "right": 3},
+
+  "3":  {"left": 2, "right": 5, "top": 4},
+
+  "4":  {"bottom": 3, "right": 6},
+
+  "5":  {"left": 3, "top": 6},
+
+  "6":  {"bottom": 5, "left": 4, "right": 7, "top": 9},
+
+  "7":  {"left": 6, "top": 8, "right": 14},
+
+  "8":  {"bottom": 7, "right": 13, "left": 9},
+
+  "9":  {"right": 8, "bottom": 6, "top": 10},
+
+  "10": {"bottom": 9, "left": 12, "top": 11},
+
+  "11": {"bottom": 10},
+
+  "12": {"right": 10, "top": 13},
+
+  "13": {"bottom": 12, "top": 14},
+
+  "14": {"bottom": 13, "left": 7, "right": 16, "top": 15},
+
+  "15": {"bottom": 14, "top": 16},
+
+  "16": {"bottom": 15, "left": 14, "top": 17},
+
+  "17": {"bottom": 16, "left": 6, "right": 18},
+
+  "18": {"left": 17, "top": 19},
+
+  "19": {"bottom": 18, "top": 20},
+
+  "20": {"bottom": 19}
+}
+
 }
