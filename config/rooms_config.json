@@ -584,23 +584,23 @@
 
   "11": {"bottom": 10},
 
-  "12": {"right": 10, "top": 13},
+  "12": {"right": 10},
 
-  "13": {"bottom": 12, "top": 14},
+  "13": {"bottom": 14, "left": 8},
 
-  "14": {"bottom": 13, "left": 7, "right": 16, "top": 15},
+  "14": {"bottom": 16, "left": 7, "right": 15, "top": 13},
 
-  "15": {"bottom": 14, "top": 16},
+  "15": {"bottom": 17, "left": 14},
 
-  "16": {"bottom": 15, "left": 14, "top": 17},
+  "16": {"bottom": 19, "right": 17},
 
-  "17": {"bottom": 16, "left": 6, "right": 18},
+  "17": {"top": 15, "left": 16, "right": 18},
 
-  "18": {"left": 17, "top": 19},
+  "18": {"left": 17},
 
-  "19": {"bottom": 18, "top": 20},
+  "19": {"bottom": 20},
 
-  "20": {"bottom": 19}
+  "20": {"top": 19}
 }
 
 }
