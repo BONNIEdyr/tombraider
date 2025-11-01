@@ -3,6 +3,8 @@ import sys
 import json
 import copy
 
+from src.enemies.enemy_manager import EnemyManager
+
 
 def load_config():
     with open('config/game_config.json', 'r', encoding='utf-8') as f:
@@ -102,7 +104,7 @@ def check_wall_collision(new_pos, player, current_room_data):
     return False
 
 
-def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms, room_minimap_pos, minimap):
+def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms, room_minimap_pos, minimap, enemy_manager=None):
     if player["just_switched"]:
         if WALL_WIDTH < player["pos"][0] < SCREEN_WIDTH - WALL_WIDTH and WALL_WIDTH < player["pos"][
             1] < SCREEN_HEIGHT - WALL_WIDTH:
@@ -158,6 +160,12 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
                     new_x, new_y = prev_x, prev_y + cell_size
 
                 room_minimap_pos[target_room_id] = (new_x, new_y)
+                # Activate enemy group for the new room if manager provided
+                if enemy_manager is not None:
+                    try:
+                        enemy_manager.activate_room(target_room_id)
+                    except Exception:
+                        pass
             return
 
 
@@ -305,6 +313,11 @@ def main():
     rooms_config["rooms"] = [copy.deepcopy(room) for room in rooms_config["rooms"]]
     room_neighbors = rooms_config["room_neighbors"]
 
+    # --- Enemy manager: load and activate the starting room ---
+    enemy_manager = EnemyManager(rooms_config)
+    enemy_manager.load_all_rooms()
+    enemy_manager.activate_room(player["current_room"])
+
     clock = pg.time.Clock()
     running = True
 
@@ -333,13 +346,19 @@ def main():
             if not check_wall_collision(new_pos, player, current_room):
                 player["pos"] = new_pos
 
-        handle_room_switch(player, current_room, room_neighbors, explored_rooms, room_minimap_pos, minimap)
+        handle_room_switch(player, current_room, room_neighbors, explored_rooms, room_minimap_pos, minimap, enemy_manager)
+        # Update enemies/projectiles with a small Sprite exposing rect for collision/update
+        player_sprite = pg.sprite.Sprite()
+        player_sprite.rect = get_player_rect(player)
+        enemy_manager.update(player_sprite)
         handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
 
         if game_state["tip_timer"] > 0:
             game_state["tip_timer"] -= 1
 
+        # Draw world + enemies/projectiles
         draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
+        enemy_manager.draw(screen)
         pg.display.flip()
         clock.tick(60)
 

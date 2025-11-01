@@ -1,13 +1,21 @@
 import pygame as pg
 from .base_enemy import Enemy
 
+SCALE_FACTOR = 0.2
+
 class Bat(Enemy):
     """
     蝙蝠敌人类
     """
+    TRANSPARENT_COLOR = (255, 255, 255)
     def __init__(self, x, y):
-        bat_image = pg.image.load("assets/enemies/bat.png").convert_alpha()
-        super().__init__(x, y, hp=30, speed=3, image=bat_image)
+        original_image = pg.image.load("assets/enemies/bat.png").convert()
+        original_image.set_colorkey(self.TRANSPARENT_COLOR)
+        original_w, original_h = original_image.get_size()
+        new_w = int(original_w * SCALE_FACTOR)
+        new_h = int(original_h * SCALE_FACTOR)
+        bat_image = pg.transform.scale(original_image, (new_w, new_h))
+        super().__init__(x, y, hp=30, speed=1.5, image=bat_image)
 
     def update(self, player):
         """
