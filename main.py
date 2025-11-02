@@ -4,6 +4,7 @@ import json
 import copy
 
 from src.enemies.enemy_manager import EnemyManager
+from src.player.player import Player
 
 
 def load_config():
@@ -34,13 +35,14 @@ def init_base_config():
 
 
 def init_global_state():
-    player = {
-        "pos": config["player"]["initial_pos"].copy(),
-        "radius": config["player"]["radius"],
-        "speed": config["player"]["speed"],
-        "current_room": config["player"]["initial_room"],
-        "just_switched": False
-    }
+    # 使用新的Player类
+    player = Player(
+        config["player"]["initial_pos"][0],
+        config["player"]["initial_pos"][1]
+    )
+    player.current_room = config["player"]["initial_room"]
+    player.just_switched = False
+    
     game_state = {"has_treasure": False, "tip_text": "", "tip_timer": 0}
     explored_rooms = [config["player"]["initial_room"]]
     room_minimap_pos = {config["player"]["initial_room"]: (0, 0)}
@@ -62,8 +64,30 @@ def init_minimap_config():
 
 
 def get_player_rect(player):
-    return pg.Rect(player["pos"][0] - player["radius"], player["pos"][1] - player["radius"],
-                   player["radius"] * 2, player["radius"] * 2)
+    # 兼容字典和对象两种形式
+    if hasattr(player, 'get_rect'):
+        return player.get_rect()
+    else:
+        return pg.Rect(player["pos"][0] - player["radius"], player["pos"][1] - player["radius"],
+                       player["radius"] * 2, player["radius"] * 2)
+
+
+def get_player_room_id(player):
+    """统一获取玩家房间ID"""
+    return player.current_room if hasattr(player, 'current_room') else player["current_room"]
+
+
+def get_player_position(player):
+    """统一获取玩家位置"""
+    if hasattr(player, 'x'):
+        return [player.x, player.y]
+    else:
+        return player["pos"]
+
+
+def get_player_radius(player):
+    """统一获取玩家半径"""
+    return player.radius if hasattr(player, 'radius') else player["radius"]
 
 
 def show_tip(game_state, text, duration=None):
@@ -74,8 +98,14 @@ def show_tip(game_state, text, duration=None):
 
 
 def check_wall_collision(new_pos, player, current_room_data):
-    player_rect = pg.Rect(new_pos[0] - player["radius"], new_pos[1] - player["radius"],
-                          player["radius"] * 2, player["radius"] * 2)
+    # 兼容字典和对象两种形式
+    if hasattr(player, 'radius'):
+        radius = player.radius
+    else:
+        radius = player["radius"]
+        
+    player_rect = pg.Rect(new_pos[0] - radius, new_pos[1] - radius,
+                          radius * 2, radius * 2)
 
     for wall in current_room_data["walls"]:
         wall_rect = pg.Rect(wall[0], wall[1], wall[2], wall[3])
@@ -86,13 +116,11 @@ def check_wall_collision(new_pos, player, current_room_data):
                 gap_x, gap_y_min, gap_y_max = gap_info
                 if gap_dir == "right" and wall_rect.x == gap_x and gap_y_min <= new_pos[1] <= gap_y_max:
                     in_gap = True
-                elif gap_dir == "left" and (wall_rect.x + wall_rect.width) == gap_x and gap_y_min <= new_pos[
-                    1] <= gap_y_max:
+                elif gap_dir == "left" and (wall_rect.x + wall_rect.width) == gap_x and gap_y_min <= new_pos[1] <= gap_y_max:
                     in_gap = True
             elif gap_dir in ["top", "bottom"]:
                 gap_x_min, gap_x_max, gap_y = gap_info
-                if gap_dir == "top" and (wall_rect.y + wall_rect.height) == gap_y and gap_x_min <= new_pos[
-                    0] <= gap_x_max:
+                if gap_dir == "top" and (wall_rect.y + wall_rect.height) == gap_y and gap_x_min <= new_pos[0] <= gap_x_max:
                     in_gap = True
                 elif gap_dir == "bottom" and wall_rect.y == gap_y and gap_x_min <= new_pos[0] <= gap_x_max:
                     in_gap = True
@@ -105,13 +133,27 @@ def check_wall_collision(new_pos, player, current_room_data):
 
 
 def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms, room_minimap_pos, minimap, enemy_manager=None):
-    if player["just_switched"]:
-        if WALL_WIDTH < player["pos"][0] < SCREEN_WIDTH - WALL_WIDTH and WALL_WIDTH < player["pos"][
-            1] < SCREEN_HEIGHT - WALL_WIDTH:
-            player["just_switched"] = False
+    # 兼容字典和对象两种形式
+    if hasattr(player, 'just_switched'):
+        just_switched = player.just_switched
+        current_room = player.current_room
+        pos = [player.x, player.y]
+        radius = player.radius
+    else:
+        just_switched = player["just_switched"]
+        current_room = player["current_room"]
+        pos = player["pos"]
+        radius = player["radius"]
+    
+    if just_switched:
+        if WALL_WIDTH < pos[0] < SCREEN_WIDTH - WALL_WIDTH and WALL_WIDTH < pos[1] < SCREEN_HEIGHT - WALL_WIDTH:
+            if hasattr(player, 'just_switched'):
+                player.just_switched = False
+            else:
+                player["just_switched"] = False
         return
 
-    px, py, pr = player["pos"][0], player["pos"][1], player["radius"]
+    px, py, pr = pos[0], pos[1], radius
 
     for gap_dir, gap_info in current_room_data.get("gaps", {}).items():
         if gap_dir in ["left", "right"]:
@@ -119,7 +161,7 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
         elif gap_dir in ["top", "bottom"]:
             gap_x_min, gap_x_max, gap_y = gap_info
 
-        target_room_id = room_neighbors.get(str(player["current_room"]), {}).get(gap_dir)
+        target_room_id = room_neighbors.get(str(current_room), {}).get(gap_dir)
         if target_room_id is None:
             continue
 
@@ -140,10 +182,17 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
             switch_triggered = True
 
         if switch_triggered:
-            prev_room_id = player["current_room"]
-            player["pos"] = new_player_pos
-            player["current_room"] = target_room_id
-            player["just_switched"] = True
+            prev_room_id = current_room
+            
+            # 更新玩家位置和房间
+            if hasattr(player, 'x'):
+                player.x, player.y = new_player_pos
+                player.current_room = target_room_id
+                player.just_switched = True
+            else:
+                player["pos"] = new_player_pos
+                player["current_room"] = target_room_id
+                player["just_switched"] = True
 
             if target_room_id not in explored_rooms:
                 explored_rooms.append(target_room_id)
@@ -171,6 +220,7 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
 
 def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, screen, main_font, COLOR, draw_game):
     player_rect = get_player_rect(player)
+    current_room_id = get_player_room_id(player)
 
     # 宝箱收集检测
     for chest in current_room_data.get("chests", []):
@@ -181,7 +231,7 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
                 game_state["has_treasure"] = True
                 show_tip(game_state, "获得宝箱！可以去出口了！", 3)
 
-    if player["current_room"] == 20 and current_room_data.get("is_exit"):
+    if current_room_id == 20 and current_room_data.get("is_exit"):
         exit_area = rooms_config["exit_detection"]
         exit_rect = pg.Rect(
             exit_area["x_min"],
@@ -245,8 +295,9 @@ def draw_minimap(screen, minimap, room_minimap_pos, room_neighbors, player, COLO
             elif direction == "bottom":
                 pg.draw.line(screen, COLOR["BLACK"], curr_rect.midbottom, neighbor_rect.midtop, 2)
 
-    if player["current_room"] in room_rects:
-        pg.draw.circle(screen, COLOR["RED"], room_rects[player["current_room"]].center, 3)
+    current_room_id = get_player_room_id(player)
+    if current_room_id in room_rects:
+        pg.draw.circle(screen, COLOR["RED"], room_rects[current_room_id].center, 3)
 
 
 def handle_minimap_drag(event, minimap):
@@ -271,7 +322,9 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
     for wall in current_room_data["walls"]:
         pg.draw.rect(screen, COLOR["BROWN"], (wall[0], wall[1], wall[2], wall[3]))
 
-    if player["current_room"] == 1:
+    current_room_id = get_player_room_id(player)
+    
+    if current_room_id == 1:
         entrance_rect = pg.Rect(0, 250, WALL_WIDTH, 100)
         pg.draw.rect(screen, COLOR["GREEN"], entrance_rect, 3)
         screen.blit(label_font.render("入口", True, COLOR["GREEN"]), (5, 280))
@@ -280,7 +333,7 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
         color = COLOR["BLUE"] if chest["is_got"] else COLOR["YELLOW"]
         pg.draw.circle(screen, color, chest["pos"], 15)
 
-    if player["current_room"] == 20:
+    if current_room_id == 20:
         exit_area = rooms_config["exit_detection"]
         pg.draw.rect(screen, COLOR["GREEN"],
                      (exit_area["x_min"], exit_area["y_min"],
@@ -288,7 +341,20 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
         screen.blit(label_font.render("出口", True, COLOR["GREEN"]),
                     (exit_area["x_min"] + 10, exit_area["y_min"] + 10))
 
-    pg.draw.circle(screen, COLOR["GREEN"], player["pos"], player["radius"])
+    # 绘制玩家（兼容对象和字典）
+    if hasattr(player, 'draw'):
+        player.draw(screen)
+        player.draw_bullets(screen)  # 绘制子弹
+    else:
+        pg.draw.circle(screen, COLOR["GREEN"], player["pos"], player["radius"])
+    
+    # 绘制生命值条
+    if hasattr(player, 'draw_health_bar'):
+        player.draw_health_bar(screen, 10, 10, 100, 10)
+        # 显示生命值文字
+        health_text = main_font.render(f"HP: {player.health_system.current_health}/{player.health_system.max_health}", True, COLOR["BLACK"])
+        screen.blit(health_text, (120, 8))
+
     draw_minimap(screen, minimap, room_minimap_pos, room_neighbors, player, COLOR)
 
     if game_state["tip_timer"] > 0:
@@ -316,41 +382,72 @@ def main():
     # --- Enemy manager: load and activate the starting room ---
     enemy_manager = EnemyManager(rooms_config)
     enemy_manager.load_all_rooms()
-    enemy_manager.activate_room(player["current_room"])
+    enemy_manager.activate_room(player.current_room)
 
     clock = pg.time.Clock()
     running = True
 
     while running:
+        current_room = next(r for r in rooms_config["rooms"] if r["room_id"] == player.current_room)
+
+        # 处理事件（包括射击输入）
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    player.shoot()  # 空格键射击
             handle_minimap_drag(event, minimap)
 
-        current_room = next(r for r in rooms_config["rooms"] if r["room_id"] == player["current_room"])
-
+        # 获取按键状态并更新玩家
         keys = pg.key.get_pressed()
-        spd = player["speed"]
-        new_pos = list(player["pos"])
+        player.update(keys, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        if keys[pg.K_w] or keys[pg.K_UP]:
-            new_pos[1] -= spd
-        if keys[pg.K_s] or keys[pg.K_DOWN]:
-            new_pos[1] += spd
-        if keys[pg.K_a] or keys[pg.K_LEFT]:
-            new_pos[0] -= spd
-        if keys[pg.K_d] or keys[pg.K_RIGHT]:
-            new_pos[0] += spd
-
-        if 0 <= new_pos[0] <= SCREEN_WIDTH and 0 <= new_pos[1] <= SCREEN_HEIGHT:
-            if not check_wall_collision(new_pos, player, current_room):
-                player["pos"] = new_pos
+        # 碰撞检测（确保玩家不会穿过墙壁）
+        if check_wall_collision([player.x, player.y], player, current_room):
+            # 简单碰撞回退：记录移动方向并反向移动
+            if keys[pg.K_w] or keys[pg.K_UP]:
+                player.y += player.speed
+            if keys[pg.K_s] or keys[pg.K_DOWN]:
+                player.y -= player.speed
+            if keys[pg.K_a] or keys[pg.K_LEFT]:
+                player.x += player.speed
+            if keys[pg.K_d] or keys[pg.K_RIGHT]:
+                player.x -= player.speed
 
         handle_room_switch(player, current_room, room_neighbors, explored_rooms, room_minimap_pos, minimap, enemy_manager)
+        
         # Update enemies/projectiles with a small Sprite exposing rect for collision/update
         player_sprite = pg.sprite.Sprite()
         player_sprite.rect = get_player_rect(player)
         enemy_manager.update(player_sprite)
+        
+        # 子弹与敌人碰撞检测
+        for bullet in player.bullets[:]:  # 使用切片复制避免修改正在迭代的列表
+            bullet_rect = bullet.get_rect()
+            hit_enemy = False
+            for enemy in enemy_manager.get_active_enemies():
+                if bullet_rect.colliderect(enemy.rect):
+                    # 对敌人造成伤害
+                    if hasattr(enemy, 'take_damage'):
+                        enemy.take_damage(bullet.damage)
+                    hit_enemy = True
+                    break
+            if hit_enemy:
+                bullet.active = False
+                player.bullets.remove(bullet)
+        
+        # 敌人与玩家碰撞检测
+        for enemy in enemy_manager.get_active_enemies():
+            if get_player_rect(player).colliderect(enemy.rect):
+                player.take_damage(10)  # 每次碰撞造成10点伤害
+        
+        # 火球与玩家碰撞检测
+        for fireball in enemy_manager.get_projectiles():
+            if get_player_rect(player).colliderect(fireball.rect):
+                damage = fireball.hit_player(player)
+                player.take_damage(damage)
+        
         handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
 
         if game_state["tip_timer"] > 0:
