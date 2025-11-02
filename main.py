@@ -5,6 +5,8 @@ import copy
 
 from src.enemies.enemy_manager import EnemyManager
 from src.player.player import Player
+from src.gui.gui_manager import GUIManager
+
 
 
 def load_config():
@@ -16,22 +18,26 @@ config = load_config()
 WALL_WIDTH = config["game"]["wall_width"]
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 
-
-def init_base_config():
-    pg.init()
+def init_base_config(config):
+    """初始化屏幕、字体等基础配置"""
+    # 注意：pg.init() 现在在 main() 函数开头调用
+    
+    # 从game节点获取屏幕尺寸
+    SCREEN_WIDTH = config["game"]["screen_width"]
+    SCREEN_HEIGHT = config["game"]["screen_height"]
     screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pg.display.set_caption("TombRaider")
-
-    # 默认字体
-    main_font = pg.font.Font(None, config["ui"]["fonts"]["main_font_size"])
-    label_font = pg.font.Font(None, config["ui"]["fonts"]["label_font_size"])
-
-    # 从配置加载颜色
-    COLOR = {}
-    for color_name, color_value in config["ui"]["colors"].items():
-        COLOR[color_name] = tuple(color_value)
-
+    pg.display.set_caption("古墓丽影：迷宫探险")
+    
+    # 加载字体（使用ui节点的字体大小）
+    main_font = pg.font.SysFont("SimHei", config["ui"]["fonts"]["main_font_size"])
+    label_font = pg.font.SysFont("SimHei", config["ui"]["fonts"]["label_font_size"])
+    
+    # 返回颜色配置（从ui节点获取）
+    COLOR = config["ui"]["colors"]
+    
     return screen, main_font, label_font, COLOR
+
+
 
 
 def init_global_state():
@@ -367,9 +373,19 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
 
 
 def main():
+    config = load_config()
+    
+    # 第一步：先初始化Pygame
+    pg.init()  # 确保在所有GUI组件创建之前初始化
+    
+    # 第二步：初始化基础配置
     global screen, main_font, label_font, COLOR
-    screen, main_font, label_font, COLOR = init_base_config()
+    screen, main_font, label_font, COLOR = init_base_config(config)
 
+    # 第三步：现在创建GUI管理器（此时Pygame已初始化）
+    gui_manager = GUIManager(config)
+
+    # 其他初始化逻辑保持不变
     global player, game_state, explored_rooms, room_minimap_pos, minimap, room_neighbors
     player, game_state, explored_rooms, room_minimap_pos = init_global_state()
     minimap = init_minimap_config()
@@ -379,7 +395,28 @@ def main():
     rooms_config["rooms"] = [copy.deepcopy(room) for room in rooms_config["rooms"]]
     room_neighbors = rooms_config["room_neighbors"]
 
-    # --- Enemy manager: load and activate the starting room ---
+    # 删除重复的gui_manager创建，保留上面的那个
+    # gui_manager = GUIManager(config)  # 删除这行
+
+    # 第四步：创建开始界面按钮
+    def _game():
+        gui_manager.current_screen = "game"
+        enemy_manager.activate_room(player.current_room)
+    
+    def quit_game():
+        pg.quit()
+        sys.exit()
+    
+    gui_manager.create_button(
+        x=300, y=300, width=200, height=50,
+        text="START GAME", action=_game
+    )
+    gui_manager.create_button(
+        x=300, y=380, width=200, height=50,
+        text="EXIT", action=quit_game
+    )
+
+    # 敌人管理器初始化
     enemy_manager = EnemyManager(rooms_config)
     enemy_manager.load_all_rooms()
     enemy_manager.activate_room(player.current_room)
@@ -388,76 +425,91 @@ def main():
     running = True
 
     while running:
-        current_room = next(r for r in rooms_config["rooms"] if r["room_id"] == player.current_room)
+        # 根据当前界面状态处理不同逻辑
+        if gui_manager.current_screen == "start":
+            # 开始界面逻辑
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    running = False
+                gui_manager.handle_events(event)
+            
+            gui_manager.draw(screen)
+            pg.display.flip()
+            clock.tick(60)
+            continue
+            
+        elif gui_manager.current_screen == "game":
+            # 游戏主逻辑（原来的游戏循环）
+            current_room = next(r for r in rooms_config["rooms"] if r["room_id"] == player.current_room)
 
-        # 处理事件（包括射击输入）
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                running = False
-            elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_SPACE:
-                    player.shoot()  # 空格键射击
-            handle_minimap_drag(event, minimap)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    running = False
+                elif event.type == pg.KEYDOWN:
+                    if event.key == pg.K_SPACE:
+                        player.shoot()
+                handle_minimap_drag(event, minimap)
 
-        # 获取按键状态并更新玩家
-        keys = pg.key.get_pressed()
-        player.update(keys, SCREEN_WIDTH, SCREEN_HEIGHT)
+            keys = pg.key.get_pressed()
+            player.update(keys, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        # 碰撞检测（确保玩家不会穿过墙壁）
-        if check_wall_collision([player.x, player.y], player, current_room):
-            # 简单碰撞回退：记录移动方向并反向移动
-            if keys[pg.K_w] or keys[pg.K_UP]:
-                player.y += player.speed
-            if keys[pg.K_s] or keys[pg.K_DOWN]:
-                player.y -= player.speed
-            if keys[pg.K_a] or keys[pg.K_LEFT]:
-                player.x += player.speed
-            if keys[pg.K_d] or keys[pg.K_RIGHT]:
-                player.x -= player.speed
+            # 碰撞检测
+            if check_wall_collision([player.x, player.y], player, current_room):
+                if keys[pg.K_w] or keys[pg.K_UP]:
+                    player.y += player.speed
+                if keys[pg.K_s] or keys[pg.K_DOWN]:
+                    player.y -= player.speed
+                if keys[pg.K_a] or keys[pg.K_LEFT]:
+                    player.x += player.speed
+                if keys[pg.K_d] or keys[pg.K_RIGHT]:
+                    player.x -= player.speed
 
-        handle_room_switch(player, current_room, room_neighbors, explored_rooms, room_minimap_pos, minimap, enemy_manager)
-        
-        # Update enemies/projectiles with a small Sprite exposing rect for collision/update
-        player_sprite = pg.sprite.Sprite()
-        player_sprite.rect = get_player_rect(player)
-        enemy_manager.update(player_sprite)
-        
-        # 子弹与敌人碰撞检测
-        for bullet in player.bullets[:]:  # 使用切片复制避免修改正在迭代的列表
-            bullet_rect = bullet.get_rect()
-            hit_enemy = False
+            handle_room_switch(player, current_room, room_neighbors, explored_rooms, room_minimap_pos, minimap, enemy_manager)
+            
+            # 更新敌人和投射物
+            player_sprite = pg.sprite.Sprite()
+            player_sprite.rect = get_player_rect(player)
+            enemy_manager.update(player_sprite)
+            
+            # 子弹与敌人碰撞检测
+            for bullet in player.bullets[:]:
+                bullet_rect = bullet.get_rect()
+                hit_enemy = False
+                for enemy in enemy_manager.get_active_enemies():
+                    if bullet_rect.colliderect(enemy.rect):
+                        if hasattr(enemy, 'take_damage'):
+                            enemy.take_damage(bullet.damage)
+                        hit_enemy = True
+                        break
+                if hit_enemy:
+                    bullet.active = False
+                    player.bullets.remove(bullet)
+            
+            # 敌人与玩家碰撞检测
             for enemy in enemy_manager.get_active_enemies():
-                if bullet_rect.colliderect(enemy.rect):
-                    # 对敌人造成伤害
-                    if hasattr(enemy, 'take_damage'):
-                        enemy.take_damage(bullet.damage)
-                    hit_enemy = True
-                    break
-            if hit_enemy:
-                bullet.active = False
-                player.bullets.remove(bullet)
-        
-        # 敌人与玩家碰撞检测
-        for enemy in enemy_manager.get_active_enemies():
-            if get_player_rect(player).colliderect(enemy.rect):
-                player.take_damage(10)  # 每次碰撞造成10点伤害
-        
-        # 火球与玩家碰撞检测
-        for fireball in enemy_manager.get_projectiles():
-            if get_player_rect(player).colliderect(fireball.rect):
-                damage = fireball.hit_player(player)
-                player.take_damage(damage)
-        
-        handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
+                if get_player_rect(player).colliderect(enemy.rect):
+                    player.take_damage(10)
+            
+            # 火球与玩家碰撞检测
+            for fireball in enemy_manager.get_projectiles():
+                if get_player_rect(player).colliderect(fireball.rect):
+                    damage = fireball.hit_player(player)
+                    player.take_damage(damage)
+            
+            handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
 
-        if game_state["tip_timer"] > 0:
-            game_state["tip_timer"] -= 1
+            if game_state["tip_timer"] > 0:
+                game_state["tip_timer"] -= 1
 
-        # Draw world + enemies/projectiles
-        draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
-        enemy_manager.draw(screen)
-        pg.display.flip()
-        clock.tick(60)
+            # 绘制游戏
+            draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
+            enemy_manager.draw(screen)
+            
+            # 使用GUI管理器绘制HUD
+            gui_manager.draw(screen, player, game_state)
+            
+            pg.display.flip()
+            clock.tick(60)
 
     pg.quit()
 

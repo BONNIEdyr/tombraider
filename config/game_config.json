@@ -9,7 +9,10 @@
       "GRAY": [100, 100, 100],
       "RED": [255, 0, 0],
       "BLACK": [0, 0, 0],
-      "LIGHT_GRAY": [200, 200, 200]
+      "LIGHT_GRAY": [200, 200, 200],
+      "DARK_BROWN": [101, 67, 33], 
+      "LIGHT_BROWN": [160, 82, 45],
+      "GOLD": [255, 215, 0]
     },
     "fonts": {
       "main_font_size": 24,
@@ -27,10 +30,13 @@
     "height": 150,
     "x": 640,
     "y": 10,
-    "cell_size": 20
+    "cell_size": 20,
+    "allow_drag": true
   },
   "game": {
     "wall_width": 50,
-    "tip_duration": 2
+    "tip_duration": 2,
+    "screen_width": 800,
+    "screen_height": 600
   }
 }
