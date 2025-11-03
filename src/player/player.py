@@ -17,6 +17,10 @@ class Player:
         # 系统组件
         self.health_system = HealthSystem(PLAYER_CONFIG["max_health"])
         self.bullets = []
+
+        # 子弹数量相关属性
+        self.ammo = BULLET_CONFIG["initial_ammo"]  # 当前子弹数量
+        self.max_ammo = BULLET_CONFIG["max_ammo"]  # 最大子弹数量
         
         # 状态
         self.is_moving = False
@@ -63,7 +67,8 @@ class Player:
         """发射子弹"""
         if (self.shoot_cooldown <= 0 and 
             len(self.bullets) < BULLET_CONFIG["max_bullets"] and 
-            self.health_system.is_alive):
+            self.health_system.is_alive and
+            self.ammo > 0):  # 新增条件
             
             bullet = Bullet(
                 self.x, self.y, 
@@ -74,6 +79,7 @@ class Player:
             )
             self.bullets.append(bullet)
             self.shoot_cooldown = BULLET_CONFIG["cooldown"]
+            self.ammo -= 1  # 减少子弹数量
             return True
         return False
     
@@ -145,6 +151,11 @@ class Player:
         
         # 边框
         pg.draw.rect(screen, (255, 255, 255), (x, y, width, height), 1)
+
+        # 绘制子弹数量
+        ammo_text = f"子弹: {self.ammo}/{self.max_ammo}"
+        ammo_surf = pg.font.SysFont("SimHei", 16).render(ammo_text, True, (255, 255, 255))
+        screen.blit(ammo_surf, (x, y + 20))  # 绘制在生命值条下方
     
     def get_rect(self):
         """获取碰撞矩形（用于与现有代码兼容）"""
@@ -166,5 +177,7 @@ class Player:
             'health': self.health_system.current_health,
             'max_health': self.health_system.max_health,
             'alive': self.health_system.is_alive,
-            'bullets_count': len(self.bullets)
+            'bullets_count': len(self.bullets),
+            'ammo': self.ammo,  
+            'max_ammo': self.max_ammo  
         }

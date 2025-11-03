@@ -14,8 +14,11 @@ BULLET_CONFIG = {
     "damage": 10,
     "color": (255, 255, 0),  # 黄色
     "max_bullets": 5,
-    "cooldown": 15
+    "cooldown": 15,
+    "max_ammo": 30,  # 新增：最大子弹数量限制
+    "initial_ammo": 10  # 新增：初始子弹数量
 }
+  
 
 # 控制键位
 CONTROLS = {
