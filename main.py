@@ -228,15 +228,16 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
     player_rect = get_player_rect(player)
     current_room_id = get_player_room_id(player)
 
-    # 宝箱收集检测
+    # 宝箱收集检测（保持不变）
     for chest in current_room_data.get("chests", []):
         if not chest["is_got"]:
             chest_rect = pg.Rect(chest["pos"][0] - 15, chest["pos"][1] - 15, 30, 30)
             if player_rect.colliderect(chest_rect):
                 chest["is_got"] = True
                 game_state["has_treasure"] = True
-                show_tip(game_state, "获得宝箱！可以去出口了！", 3)
+                show_tip(game_state, "Found the treasure! You can go to the exit!", 3)
 
+    # 出口检测（修复缩进）
     if current_room_id == 20 and current_room_data.get("is_exit"):
         exit_area = rooms_config["exit_detection"]
         exit_rect = pg.Rect(
@@ -246,17 +247,30 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
             exit_area["y_max"] - exit_area["y_min"]
         )
 
+        # 关键：将碰撞检测放入if内，确保只在20号房间执行
         if player_rect.colliderect(exit_rect):
             if game_state["has_treasure"]:
-                show_tip(game_state, "你赢了！", 2)
+                # 1. 设置胜利提示
+                show_tip(game_state, "You win!", 2)
+                # 2. 绘制游戏画面（包含提示）
                 draw_game(screen, player, current_room_data, label_font, COLOR, minimap, room_neighbors,
-                          room_minimap_pos, rooms_config)
+                        room_minimap_pos, rooms_config)
+                # 3. 强制刷新屏幕
                 pg.display.flip()
-                pg.time.wait(2000)
+                # 4. 等待2秒（处理事件避免假死）
+                start_time = pg.time.get_ticks()
+                while pg.time.get_ticks() - start_time < 2000:
+                    for event in pg.event.get():
+                        if event.type == pg.QUIT:
+                            pg.quit()
+                            sys.exit()
+                # 5. 退出游戏
                 pg.quit()
                 sys.exit()
             else:
-                show_tip(game_state, "还未找到宝藏！", 2)
+                show_tip(game_state, "Treasure not found yet!", 2)
+
+
 
 
 def draw_minimap(screen, minimap, room_minimap_pos, room_neighbors, player, COLOR):
@@ -353,23 +367,9 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
         player.draw_bullets(screen)  # 绘制子弹
     else:
         pg.draw.circle(screen, COLOR["GREEN"], player["pos"], player["radius"])
-    
-    # 绘制生命值条
-    if hasattr(player, 'draw_health_bar'):
-        player.draw_health_bar(screen, 10, 10, 100, 10)
-        # 显示生命值文字
-        health_text = main_font.render(f"HP: {player.health_system.current_health}/{player.health_system.max_health}", True, COLOR["BLACK"])
-        screen.blit(health_text, (120, 8))
 
     draw_minimap(screen, minimap, room_minimap_pos, room_neighbors, player, COLOR)
 
-    if game_state["tip_timer"] > 0:
-        tip_text = main_font.render(game_state["tip_text"], True, COLOR["BROWN"])
-        tip_rect = tip_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-        tip_bg_rect = tip_rect.inflate(20, 10)
-        pg.draw.rect(screen, COLOR["WHITE"], tip_bg_rect)
-        pg.draw.rect(screen, COLOR["BROWN"], tip_bg_rect, 2)
-        screen.blit(tip_text, tip_rect)
 
 
 def main():
@@ -395,8 +395,6 @@ def main():
     rooms_config["rooms"] = [copy.deepcopy(room) for room in rooms_config["rooms"]]
     room_neighbors = rooms_config["room_neighbors"]
 
-    # 删除重复的gui_manager创建，保留上面的那个
-    # gui_manager = GUIManager(config)  # 删除这行
 
     # 第四步：创建开始界面按钮
     def _game():
@@ -499,6 +497,15 @@ def main():
             handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
 
             if game_state["tip_timer"] > 0:
+                # 1. 绘制提示框和文本（只执行一次）
+                tip_text = main_font.render(game_state["tip_text"], True, COLOR["BROWN"])
+                tip_rect = tip_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+                tip_bg_rect = tip_rect.inflate(20, 10)  # 背景框比文本大一点
+                pg.draw.rect(screen, COLOR["WHITE"], tip_bg_rect)  # 白色背景
+                pg.draw.rect(screen, COLOR["BROWN"], tip_bg_rect, 2)  # 棕色边框
+                screen.blit(tip_text, tip_rect)  # 绘制文本
+                
+                # 2. 减少计时器（每帧减1）
                 game_state["tip_timer"] -= 1
 
             # 绘制游戏

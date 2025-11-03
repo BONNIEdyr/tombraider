@@ -21,6 +21,17 @@ class GUIManager:
         self.buttons = []  # 存储按钮信息（每个按钮包含位置、文字、点击事件等）
         self.victory = False  # 用于结束界面区分"胜利"或"失败"状态
 
+        # 添加纹理和图标
+        try:
+            self.icons = {
+                "health": pg.image.load("assets/ui/heart_icon.png").convert_alpha(),
+                "treasure": pg.image.load("assets/ui/treasure_icon.png").convert_alpha(),
+            }
+            # 缩放图标到合适尺寸
+            for key in self.icons:
+                self.icons[key] = pg.transform.scale(self.icons[key], (20, 20))
+        except:
+            self.icons = {}  # 备用，没有图片时也能运行
 
     def create_button(self, x: int, y: int, width: int, height: int, text: str, action) -> None:
         """创建交互按钮"""
@@ -32,7 +43,7 @@ class GUIManager:
         })
 
     def handle_events(self, event: pg.event.Event) -> None:
-        """处理GUI事件（按钮点击、鼠标悬停）"""
+        """处理GUI事件(按钮点击、鼠标悬停）"""
         if self.current_screen in ["start", "end"]:
             mouse_pos = pg.mouse.get_pos()
             # 检测鼠标悬停
@@ -58,46 +69,51 @@ class GUIManager:
             text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
             screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
         # 操作提示
-        tips = ["WASD to move | Space to shoot | H to use food", "Find the treasure and reach the exit to win"]
+        tips = ["Arrow keys to move | Space to shoot | H to use food", "Find the treasure and reach the exit to win"]
         for i, tip in enumerate(tips):
             text = self.fonts["label"].render(tip, True, self.colors["WHITE"])
             screen.blit(text, (self.screen_width//2 - text.get_width()//2, 500 + i*30))
 
     def draw_hud(self, screen: pg.Surface, player, game_state: Dict) -> None:
-        """绘制游戏内HUD（生命值、状态等）"""
+        """绘制游戏内HUD(生命值、状态等）"""
         # 安全检查
         if player is None or game_state is None:
             return
             
         # 1. 生命值条
-        health_bg = pg.Rect(20, 20, 200, 20)
+        # 调整位置（y从20改为10，上移10像素），高度从3改为10（更粗）
+        health_bg = pg.Rect(20, 10, 200, 8)
         pg.draw.rect(screen, self.colors["RED"], health_bg)
-        
+
         # 安全访问 health_system
         if hasattr(player, 'health_system') and player.health_system is not None:
             health_percentage = player.health_system.current_health / player.health_system.max_health
+            # 同步调整当前生命值条的位置和高度
             pg.draw.rect(screen, self.colors["GREEN"], 
-                        (20, 20, 200 * health_percentage, 20))
+                        (20, 10, 200 * health_percentage, 8))
             
-            # 生命值文本
-            health_text = self.fonts["label"].render(
-                f"生命值: {player.health_system.current_health}/{player.health_system.max_health}", 
+            # 生命值文本（用更大的main字体，上移位置）
+            health_text = self.fonts["main"].render(  # 改用更大的main字体
+                f"HP: {player.health_system.current_health}/{player.health_system.max_health}", 
                 True, self.colors["BLACK"])
-            screen.blit(health_text, (230, 20))
+            screen.blit(health_text, (230, 8))  # y从18改为8，与粗血条对齐
         else:
-            # 备用显示
-            health_text = self.fonts["label"].render("生命值: ?/?", True, self.colors["BLACK"])
-            screen.blit(health_text, (230, 20))
+            # 备用显示（同样放大字体并上移）
+            health_text = self.fonts["main"].render("Health:  ?/?", True, self.colors["BLACK"])
+            screen.blit(health_text, (230, 0))  # 上移到更顶部
+
 
         # 2. 房间与物品信息
         room_text = self.fonts["label"].render(
-            f"房间: {getattr(player, 'current_room', '?')}/20", True, self.colors["BLACK"])
-        screen.blit(room_text, (20, 50))
+            f"Room: {getattr(player, 'current_room', '?')}/20", True, self.colors["BLACK"])
+        screen.blit(room_text, (20, 23))
         
         # 3. 宝藏状态
-        treasure_text = "已找到宝藏" if game_state.get("has_treasure", False) else "未找到宝藏"
+        treasure_text = "Treasure Found" if game_state.get("has_treasure", False) else "Treasure Not Found"
         treasure_color = self.colors["GOLD"] if game_state.get("has_treasure", False) else self.colors["RED"]
-        screen.blit(self.fonts["label"].render(treasure_text, True, treasure_color), (350, 20))
+        # 使用更大的main字体（配置中main_font_size为24，label为16）
+        screen.blit(self.fonts["main"].render(treasure_text, True, treasure_color), (480, 18))  # 微调y坐标使其垂直居中
+
 
         # 4. 临时提示
         if game_state.get("tip_timer", 0) > 0:
@@ -107,11 +123,27 @@ class GUIManager:
             tip_text = self.fonts["main"].render(game_state.get("tip_text", ""), True, self.colors["BROWN"])
             screen.blit(tip_text, tip_text.get_rect(center=tip_bg.center))
 
+        # 5. 装备状态显示
+        equipment_y = 35
+        if hasattr(player, 'equipment') and player.equipment:
+            # 标题用亮黄色，更醒目
+            equip_text = self.fonts["label"].render("Equipment:", True, self.colors["YELLOW"])
+            screen.blit(equip_text, (20, equipment_y))
+            
+            # 装备项用白色，与背景对比更强
+            for i, item in enumerate(player.equipment.items()):
+                equip_item = self.fonts["label"].render(f"- {item[0]}: {item[1]}", True, self.colors["WHITE"])
+                screen.blit(equip_item, (40, equipment_y + 25 + i*25))
+        else:
+            # 无装备提示也用亮黄色
+            no_equip = self.fonts["label"].render("No Equipment", True, self.colors["YELLOW"])
+            screen.blit(no_equip, (20, equipment_y))
+
     def draw_end_screen(self, screen: pg.Surface) -> None:
         """绘制结束界面"""
         screen.fill(self.colors["DARK_BROWN"])
         # 结果文本
-        result = "胜利！成功逃脱！" if self.victory else "失败！再接再厉！"
+        result = "Victory! Successfully escaped!" if self.victory else "Defeat! Try again!"
         result_color = self.colors["GOLD"] if self.victory else self.colors["RED"]
         result_text = self.fonts["title"].render(result, True, result_color)
         screen.blit(result_text, (self.screen_width//2 - result_text.get_width()//2, 150))
@@ -134,7 +166,7 @@ class GUIManager:
             else:
                 # 如果为 None，绘制一个基本的游戏界面
                 screen.fill(self.colors["WHITE"])
-                warning_text = self.fonts["main"].render("游戏加载中...", True, self.colors["BLACK"])
+                warning_text = self.fonts["main"].render("Loading game...", True, self.colors["BLACK"])
                 screen.blit(warning_text, (self.screen_width//2 - warning_text.get_width()//2, self.screen_height//2))
         elif self.current_screen == "end":
             self.draw_end_screen(screen)
