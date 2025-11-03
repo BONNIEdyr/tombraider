@@ -4,6 +4,7 @@ from typing import Dict, Optional
 from .slime import Slime
 from .bat import Bat
 from .wizard import Wizard
+from .guard import Guard
 from .projectiles.fireball import Fireball
 
 
@@ -11,6 +12,7 @@ ENEMY_MAPPING = {
     "slime": Slime,
     "bat": Bat,
     "wizard": Wizard,
+    "guard": Guard,
 }
 
 
@@ -147,6 +149,13 @@ class EnemyManager:
         # Draw projectiles first so they render behind enemies, adjust order as needed
         self.projectiles.draw(screen)
         self.active_group.draw(screen)
+        # draw health bars for enemies
+        for e in self.active_group:
+            try:
+                if hasattr(e, 'draw_health_bar'):
+                    e.draw_health_bar(screen)
+            except Exception:
+                pass
 
     # --- Utilities ---
     def get_active_enemies(self) -> pg.sprite.Group:

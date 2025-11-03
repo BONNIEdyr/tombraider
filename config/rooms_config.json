@@ -27,7 +27,6 @@
       "chests": [],
       "is_exit": false,
       "enemies": [
-      {"type": "slime", "pos": [200, 200], "hp": 1, "speed": 1},
       {"type": "slime", "pos": [400, 300], "hp": 1, "speed": 1}
       ]
     },
@@ -311,7 +310,27 @@
         {"pos": [150, 150], "is_got": false}
       ],
       "is_exit": false,
-      "enemies": []
+      "enemies": [
+    {
+      "type": "guard", 
+      "pos": [220, 150], 
+      "hp": 3, 
+      "speed": 1.2,
+      "alert_range": 200 
+    },
+    {
+      "type": "wizard", 
+      "pos": [450, 320], 
+      "hp": 4, 
+      "speed": 1.5
+    },
+    {
+      "type": "bat", 
+      "pos": [680, 500], 
+      "hp": 2, 
+      "speed": 2.5
+    }
+  ]
     },
     {
       "room_id": 12,

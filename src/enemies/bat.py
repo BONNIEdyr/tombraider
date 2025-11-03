@@ -15,7 +15,7 @@ class Bat(Enemy):
         new_w = int(original_w * SCALE_FACTOR)
         new_h = int(original_h * SCALE_FACTOR)
         bat_image = pg.transform.scale(original_image, (new_w, new_h))
-        super().__init__(x, y, hp=30, speed=1.5, image=bat_image)
+        super().__init__(x, y, hp=30, speed=1, image=bat_image)
 
     def update(self, player):
         """
