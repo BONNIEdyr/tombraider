@@ -2,28 +2,44 @@
 这是一个使用 Python 和 Pygame 库开发的 2D 动作冒险游戏项目。
 ## 文件结构
 ```
-tombraider/
-├── assets/
-│   └── enemies/              # 存放所有敌人的图片资源
-│       ├── bat.png
-│       ├── slime.png
-│       └── wizard.png
-├── config/                   # 存放游戏的配置数据
-│   ├── game_config.json      # 游戏全局设置（屏幕尺寸、帧率等）
-│   └── rooms_config.json     # 房间布局、敌人位置和属性
-├── main.py                   # 程序入口。负责游戏初始化和主循环
+.
+├── assets
+│   ├── enemies
+│   │   ├── bat.png
+│   │   ├── guard.png
+│   │   ├── mummy.png
+│   │   └── wizard.png
+│   └── ui
+│       └── start_bg.png
+├── config
+│   ├── game_config.json
+│   └── rooms_config.json
+├── main.py
 ├── README.md
-└── src/                      # 存放所有 Python 源码和核心游戏逻辑
-    └── enemies/              # 敌人物理和逻辑模块
-        ├── projectiles/      # 投射物相关模块
-        │   ├── fireball.py   # 火球类，定义投射物行为
-        │   └── __init__.py
-        ├── base_enemy.py     # 敌人基类 (Enemy)，定义所有敌人的共同属性
-        ├── bat.py            # Bat 敌人的具体实现
-        ├── enemy_manager.py  # 敌人统一管理器。负责加载、更新和绘制敌人
-        ├── __init__.py
-        ├── slime.py          # Slime 敌人的具体实现
-        └── wizard.py         # Wizard 敌人的具体实现
+├── src
+│   ├── enemies
+│   │   ├── base_enemy.py
+│   │   ├── bat.py
+│   │   ├── enemy_manager.py
+│   │   ├── guard.py
+│   │   ├── __init__.py
+│   │   ├── projectiles
+│   │   │   ├── fireball.py
+│   │   │   └── __init__.py
+│   │   ├── slime.py
+│   │   └── wizard.py
+│   ├── gui
+│   │   ├── gui_manager.py
+│   │   └── minimap.py
+│   └── player
+│       ├── bullet.py
+│       ├── constants.py
+│       ├── health_system.py
+│       ├── __init__.py
+│       └── player.py
+└── test_player.py
+
+
 ```
 （每更新完代码可以在根目录的命令行里运行命令“tree"得到新的项目结构目录并更新）
 ### 进度

@@ -33,25 +33,28 @@ class GUIManager:
         except:
             self.icons = {}  # 备用，没有图片时也能运行
 
-    def create_button(self, x: int, y: int, width: int, height: int, text: str, action) -> None:
+    def create_button(self, x: int, y: int, width: int, height: int, text: str, action, screen_name) -> None:
         """创建交互按钮"""
         self.buttons.append({
             "rect": pg.Rect(x, y, width, height),
             "text": text,
             "action": action,
-            "hover": False
+            "hover": False,
+            "screen": screen_name
         })
 
     def handle_events(self, event: pg.event.Event) -> None:
-        """处理GUI事件(按钮点击、鼠标悬停）"""
         if self.current_screen in ["start", "end"]:
             mouse_pos = pg.mouse.get_pos()
-            # 检测鼠标悬停
             for btn in self.buttons:
+                if btn["screen"] != self.current_screen:
+                    continue  # 只处理当前界面的按钮
+
+                # 检测悬停
                 btn["hover"] = btn["rect"].collidepoint(mouse_pos)
-            # 检测鼠标点击
-            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                for btn in self.buttons:
+
+                # 检测点击
+                if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                     if btn["rect"].collidepoint(mouse_pos):
                         btn["action"]()
 
@@ -63,11 +66,12 @@ class GUIManager:
         screen.blit(title, (self.screen_width//2 - title.get_width()//2, 150))
         # 绘制按钮
         for btn in self.buttons:
-            color = self.colors["LIGHT_BROWN"] if btn["hover"] else self.colors["BROWN"]
-            pg.draw.rect(screen, color, btn["rect"], border_radius=10)
-            pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=10)
-            text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
-            screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
+            if btn.get("screen") == "start":
+                color = self.colors["LIGHT_BROWN"] if btn["hover"] else self.colors["BROWN"]
+                pg.draw.rect(screen, color, btn["rect"], border_radius=10)
+                pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=10)
+                text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
+                screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
         # 操作提示
         tips = ["Arrow keys to move | Space to shoot | H to use food", "Find the treasure and reach the exit to win"]
         for i, tip in enumerate(tips):
@@ -149,11 +153,12 @@ class GUIManager:
         screen.blit(result_text, (self.screen_width//2 - result_text.get_width()//2, 150))
         # 按钮
         for btn in self.buttons:
-            color = self.colors["LIGHT_BROWN"] if btn["hover"] else self.colors["BROWN"]
-            pg.draw.rect(screen, color, btn["rect"], border_radius=10)
-            pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=10)
-            text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
-            screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
+            if btn.get("screen") == "end":
+                color = self.colors["LIGHT_BROWN"] if btn["hover"] else self.colors["BROWN"]
+                pg.draw.rect(screen, color, btn["rect"], border_radius=10)
+                pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=10)
+                text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
+                screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
 
     def draw(self, screen: pg.Surface, player=None, game_state=None) -> None:
         """根据当前界面状态绘制对应内容"""

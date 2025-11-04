@@ -358,7 +358,7 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
         pg.draw.rect(screen, COLOR["GREEN"],
                      (exit_area["x_min"], exit_area["y_min"],
                       SCREEN_WIDTH - exit_area["x_min"], exit_area["y_max"] - exit_area["y_min"]), 3)
-        screen.blit(label_font.render("出口", True, COLOR["GREEN"]),
+        screen.blit(label_font.render("EXIT", True, COLOR["GREEN"]),
                     (exit_area["x_min"] + 10, exit_area["y_min"] + 10))
 
     # 绘制玩家（兼容对象和字典）
@@ -395,6 +395,10 @@ def main():
     rooms_config["rooms"] = [copy.deepcopy(room) for room in rooms_config["rooms"]]
     room_neighbors = rooms_config["room_neighbors"]
 
+    # 敌人管理器初始化
+    enemy_manager = EnemyManager(rooms_config)
+    enemy_manager.load_all_rooms()
+    enemy_manager.activate_room(player.current_room)
 
     # 第四步：创建开始界面按钮
     def _game():
@@ -407,17 +411,30 @@ def main():
     
     gui_manager.create_button(
         x=300, y=300, width=200, height=50,
-        text="START GAME", action=_game
+        text="START GAME", action=_game,
+        screen_name="start" 
     )
     gui_manager.create_button(
         x=300, y=380, width=200, height=50,
-        text="EXIT", action=quit_game
+        text="EXIT", action=quit_game,
+        screen_name="start"
+    )
+    def restart_game():
+        global player, game_state, explored_rooms, room_minimap_pos
+        player, game_state, explored_rooms, room_minimap_pos = init_global_state()
+        enemy_manager.activate_room(player.current_room)
+        gui_manager.victory = False
+        gui_manager.current_screen = "game"
+
+    gui_manager.create_button(
+    x=300, y=350, width=200, height=50,
+    text="RESTART", action=restart_game, screen_name="end"  # ✅ 新增参数 screen_name="end"
+    )
+    gui_manager.create_button(
+    x=300, y=420, width=200, height=50,
+    text="EXIT", action=quit_game, screen_name="end"
     )
 
-    # 敌人管理器初始化
-    enemy_manager = EnemyManager(rooms_config)
-    enemy_manager.load_all_rooms()
-    enemy_manager.activate_room(player.current_room)
 
     clock = pg.time.Clock()
     running = True
@@ -493,21 +510,19 @@ def main():
                 if get_player_rect(player).colliderect(fireball.rect):
                     damage = fireball.hit_player(player)
                     player.take_damage(damage)
+            if not player.health_system.is_alive:
+                show_tip(game_state, "You Died!", 1)
+                draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
+                gui_manager.draw(screen, player, game_state)  # 让HUD绘制tip
+                pg.display.flip()
+                pg.time.wait(1000)
+                gui_manager.victory = False
+                gui_manager.current_screen = "end"
+                continue
             
             handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
 
-            if game_state["tip_timer"] > 0:
-                # 1. 绘制提示框和文本（只执行一次）
-                tip_text = main_font.render(game_state["tip_text"], True, COLOR["BROWN"])
-                tip_rect = tip_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-                tip_bg_rect = tip_rect.inflate(20, 10)  # 背景框比文本大一点
-                pg.draw.rect(screen, COLOR["WHITE"], tip_bg_rect)  # 白色背景
-                pg.draw.rect(screen, COLOR["BROWN"], tip_bg_rect, 2)  # 棕色边框
-                screen.blit(tip_text, tip_rect)  # 绘制文本
-                
-                # 2. 减少计时器（每帧减1）
-                game_state["tip_timer"] -= 1
-
+            
             # 绘制游戏
             draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
             enemy_manager.draw(screen)
@@ -517,6 +532,15 @@ def main():
             
             pg.display.flip()
             clock.tick(60)
+        elif gui_manager.current_screen == "end":
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    running = False
+                gui_manager.handle_events(event)
+            gui_manager.draw(screen)
+            pg.display.flip()
+            clock.tick(60)
+            continue
 
     pg.quit()
 
