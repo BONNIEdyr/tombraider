@@ -32,6 +32,101 @@ class GUIManager:
                 self.icons[key] = pg.transform.scale(self.icons[key], (20, 20))
         except:
             self.icons = {}  # 备用，没有图片时也能运行
+        # settings support
+        # internal enemy types (keys used in rooms_config)
+        self.enemy_types = ["slime", "bat", "wizard", "guard"]
+        # display names for UI (show Mummy label for slime)
+        self.enemy_display = {
+            "slime": "Mummy",
+            "bat": "Bat",
+            "wizard": "Wizard",
+            "guard": "Guard",
+        }
+        # current editable counts (integers, default None means use current counts until initialized)
+        self.enemy_counts = {k: None for k in self.enemy_types}
+        # callback to apply settings: function(counts: Dict[str,int])
+        self.settings_callback = None
+        # store start screen actions so settings can return
+        self._start_action = None
+        self._quit_action = None
+        self._settings_action = None
+
+    def clear_buttons(self):
+        self.buttons = []
+
+    def show_start_buttons(self, start_action, quit_action, settings_action=None):
+        """Populate start screen buttons and remember actions for later restore."""
+        self.clear_buttons()
+        self._start_action = start_action
+        self._quit_action = quit_action
+        self._settings_action = settings_action
+        # Start
+        self.create_button(x=300, y=300, width=200, height=50, text="START GAME", action=start_action, screen_name='start')
+        # Settings
+        if settings_action is not None:
+            self.create_button(x=300, y=370, width=200, height=50, text="SETTINGS", action=settings_action, screen_name='start')
+        # Exit
+        self.create_button(x=300, y=440, width=200, height=50, text="EXIT", action=quit_action, screen_name='start')
+
+    def show_settings_buttons(self):
+        """Create +/- buttons and Save/Back for settings screen."""
+        self.clear_buttons()
+        start_x = 220
+        start_y = 180
+        row_h = 50
+        label_w = 200
+        btn_w = 40
+        for i, t in enumerate(self.enemy_types):
+            y = start_y + i * row_h
+            # minus
+            def make_dec(tt):
+                return lambda: self._adjust_enemy_count(tt, -1)
+            # plus
+            def make_inc(tt):
+                return lambda: self._adjust_enemy_count(tt, 1)
+
+            # place minus and plus buttons next to value
+            self.create_button(x=start_x + label_w + 10, y=y, width=btn_w, height=36, text='-', action=make_dec(t), screen_name='settings')
+            self.create_button(x=start_x + label_w + 10 + btn_w + 10, y=y, width=btn_w, height=36, text='+', action=make_inc(t), screen_name='settings')
+
+        # Save and Back
+        self.create_button(x=300, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='SAVE', action=self._save_settings, screen_name='settings')
+        self.create_button(x=440, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='BACK', action=self._back_to_start, screen_name='settings')
+
+    # --- settings helpers ---
+    def _adjust_enemy_count(self, etype: str, delta: int) -> None:
+        cur = self.enemy_counts.get(etype)
+        if cur is None:
+            cur = 0
+        try:
+            new = int(cur) + int(delta)
+        except Exception:
+            return
+        if new < 0:
+            new = 0
+        self.enemy_counts[etype] = new
+
+    def _save_settings(self) -> None:
+        # invoke callback
+        if callable(self.settings_callback):
+            try:
+                self.settings_callback(dict(self.enemy_counts))
+            except Exception:
+                pass
+        # return to start screen and restore buttons
+        self.current_screen = 'start'
+        try:
+            self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
+        except Exception:
+            pass
+
+    def _back_to_start(self) -> None:
+        # discard changes and return
+        self.current_screen = 'start'
+        try:
+            self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
+        except Exception:
+            pass
 
     def create_button(self, x: int, y: int, width: int, height: int, text: str, action, screen_name) -> None:
         """创建交互按钮"""
@@ -44,7 +139,7 @@ class GUIManager:
         })
 
     def handle_events(self, event: pg.event.Event) -> None:
-        if self.current_screen in ["start", "end"]:
+        if self.current_screen in ["start", "end", "settings"]:
             mouse_pos = pg.mouse.get_pos()
             for btn in self.buttons:
                 if btn["screen"] != self.current_screen:
@@ -83,6 +178,15 @@ class GUIManager:
         # 安全检查
         if player is None or game_state is None:
             return
+        # 每帧递减提示计时器（按帧数，假设60 FPS）并在计时结束时清除文本
+        try:
+            if game_state.get("tip_timer", 0) > 0:
+                game_state["tip_timer"] = max(0, game_state.get("tip_timer", 0) - 1)
+                if game_state["tip_timer"] == 0:
+                    game_state["tip_text"] = ""
+        except Exception:
+            # 不要因为计时器错误影响HUD渲染
+            pass
             
         # 1. 生命值条
         # 调整位置（y从20改为10，上移10像素），高度从3改为10（更粗）
@@ -164,6 +268,8 @@ class GUIManager:
         """根据当前界面状态绘制对应内容"""
         if self.current_screen == "start":
             self.draw_start_screen(screen)
+        elif self.current_screen == "settings":
+            self.draw_settings_screen(screen)
         elif self.current_screen == "game":
             # 确保 player 和 game_state 不为 None
             if player is not None and game_state is not None:
@@ -175,3 +281,43 @@ class GUIManager:
                 screen.blit(warning_text, (self.screen_width//2 - warning_text.get_width()//2, self.screen_height//2))
         elif self.current_screen == "end":
             self.draw_end_screen(screen)
+
+    def draw_settings_screen(self, screen: pg.Surface) -> None:
+        """Draw the settings screen with per-enemy count controls and total."""
+        screen.fill(self.colors["DARK_BROWN"])
+        title = self.fonts["title"].render("Settings", True, self.colors["GOLD"])
+        screen.blit(title, (self.screen_width//2 - title.get_width()//2, 80))
+
+        start_x = 220
+        start_y = 180
+        row_h = 50
+        for i, t in enumerate(self.enemy_types):
+            y = start_y + i * row_h
+            label = self.fonts["label"].render(self.enemy_display.get(t, t).capitalize(), True, self.colors["WHITE"])
+            screen.blit(label, (start_x, y))
+
+            val = self.enemy_counts.get(t)
+            val_text = "0" if val is None else str(val)
+            val_surf = self.fonts["label"].render(val_text, True, self.colors["WHITE"])
+            screen.blit(val_surf, (start_x + 220, y))
+
+        # total count display
+        total = 0
+        for v in self.enemy_counts.values():
+            if v is not None:
+                try:
+                    total += int(v)
+                except Exception:
+                    pass
+
+        total_surf = self.fonts["main"].render(f"Total enemies: {total}", True, self.colors["WHITE"])
+        screen.blit(total_surf, (start_x, start_y + len(self.enemy_types) * row_h + 80))
+
+        # draw settings buttons
+        for btn in self.buttons:
+            if btn.get("screen") == "settings":
+                color = self.colors["LIGHT_BROWN"] if btn["hover"] else self.colors["BROWN"]
+                pg.draw.rect(screen, color, btn["rect"], border_radius=6)
+                pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=6)
+                text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
+                screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))

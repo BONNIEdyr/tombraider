@@ -400,6 +400,70 @@ def main():
     enemy_manager.load_all_rooms()
     enemy_manager.activate_room(player.current_room)
 
+    # settings save callback: apply counts, persist rooms_config, and reload EnemyManager
+    def _apply_settings_and_reload(counts):
+        # counts: mapping etype -> int (desired total across all rooms)
+        desired = {k.lower(): (None if v is None else int(v)) for k, v in (counts or {}).items()}
+
+        # current totals per type
+        current = {t: 0 for t in gui_manager.enemy_types}
+        for room in rooms_config.get("rooms", []):
+            for e in room.get("enemies", []):
+                et = (e.get("type") or "").lower()
+                if et in current:
+                    current[et] += 1
+
+        # For each type, compute diff and add/remove accordingly.
+        for etype in gui_manager.enemy_types:
+            d = desired.get(etype)
+            if d is None:
+                continue
+            need = d - current.get(etype, 0)
+            if need > 0:
+                # add to rooms with fewer enemies first
+                rooms = rooms_config.get("rooms", [])
+                rooms_sorted = sorted(rooms, key=lambda r: len(r.get("enemies", [])))
+                ri = 0
+                while need > 0 and rooms_sorted:
+                    room = rooms_sorted[ri % len(rooms_sorted)]
+                    offset_x = 60 + ((ri // len(rooms_sorted)) % 5) * 20
+                    offset_y = 60 + (ri % 3) * 20
+                    room.setdefault("enemies", []).append({"type": etype, "pos": [offset_x, offset_y], "hp": 1, "speed": 1})
+                    need -= 1
+                    ri += 1
+            elif need < 0:
+                # remove from rooms with most enemies first
+                to_remove = -need
+                rooms_sorted_desc = sorted(rooms_config.get("rooms", []), key=lambda r: len(r.get("enemies", [])), reverse=True)
+                for room in rooms_sorted_desc:
+                    if to_remove <= 0:
+                        break
+                    new_list = []
+                    for e in room.get("enemies", []):
+                        if to_remove > 0 and (e.get("type") or "").lower() == etype:
+                            to_remove -= 1
+                            continue
+                        new_list.append(e)
+                    room["enemies"] = new_list
+
+        # persist changes
+        try:
+            with open('config/rooms_config.json', 'w', encoding='utf-8') as wf:
+                json.dump(rooms_config, wf, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Failed to write rooms_config.json: {e}")
+
+        # reload enemy manager groups
+        enemy_manager.rooms_config = rooms_config
+        enemy_manager.all_enemies.clear()
+        enemy_manager.projectiles.empty()
+        enemy_manager.active_group = pg.sprite.Group()
+        enemy_manager.active_room_id = None
+        enemy_manager.load_all_rooms()
+        enemy_manager.activate_room(player.current_room)
+
+    gui_manager.settings_callback = _apply_settings_and_reload
+
     # 第四步：创建开始界面按钮
     def _game():
         gui_manager.current_screen = "game"
@@ -409,16 +473,21 @@ def main():
         pg.quit()
         sys.exit()
     
-    gui_manager.create_button(
-        x=300, y=300, width=200, height=50,
-        text="START GAME", action=_game,
-        screen_name="start" 
-    )
-    gui_manager.create_button(
-        x=300, y=380, width=200, height=50,
-        text="EXIT", action=quit_game,
-        screen_name="start"
-    )
+    def _open_settings():
+        # compute current totals across rooms and initialize GUI values
+        totals = {t: 0 for t in gui_manager.enemy_types}
+        for room in rooms_config.get("rooms", []):
+            for e in room.get("enemies", []):
+                et = (e.get("type") or "").lower()
+                if et in totals:
+                    totals[et] += 1
+
+        gui_manager.enemy_counts.update(totals)
+        gui_manager.current_screen = 'settings'
+        gui_manager.show_settings_buttons()
+
+    # populate start screen buttons via GUIManager helper
+    gui_manager.show_start_buttons(start_action=_game, quit_action=quit_game, settings_action=_open_settings)
     def restart_game():
         global player, game_state, explored_rooms, room_minimap_pos
         player, game_state, explored_rooms, room_minimap_pos = init_global_state()
@@ -428,7 +497,7 @@ def main():
 
     gui_manager.create_button(
     x=300, y=350, width=200, height=50,
-    text="RESTART", action=restart_game, screen_name="end"  # ✅ 新增参数 screen_name="end"
+    text="RESTART", action=restart_game, screen_name="end"  
     )
     gui_manager.create_button(
     x=300, y=420, width=200, height=50,
@@ -452,7 +521,19 @@ def main():
             pg.display.flip()
             clock.tick(60)
             continue
-            
+        
+        elif gui_manager.current_screen == "settings":
+            # 设置界面：处理事件并让 GUIManager 处理点击
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    running = False
+                gui_manager.handle_events(event)
+
+            gui_manager.draw(screen)
+            pg.display.flip()
+            clock.tick(60)
+            continue
+
         elif gui_manager.current_screen == "game":
             # 游戏主逻辑（原来的游戏循环）
             current_room = next(r for r in rooms_config["rooms"] if r["room_id"] == player.current_room)
@@ -522,12 +603,9 @@ def main():
             
             handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
 
-            
-            # 绘制游戏
             draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
             enemy_manager.draw(screen)
             
-            # 使用GUI管理器绘制HUD
             gui_manager.draw(screen, player, game_state)
             
             pg.display.flip()
