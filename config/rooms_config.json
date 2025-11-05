@@ -89,16 +89,7 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "bat",
-          "pos": [
-            60,
-            60
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
+          "type": "slime",
           "pos": [
             60,
             60
@@ -110,7 +101,7 @@
           "type": "guard",
           "pos": [
             60,
-            60
+            80
           ],
           "hp": 1,
           "speed": 1
@@ -205,15 +196,6 @@
         {
           "type": "slime",
           "pos": [
-            300,
-            150
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
             60,
             80
           ],
@@ -221,10 +203,10 @@
           "speed": 1
         },
         {
-          "type": "slime",
+          "type": "guard",
           "pos": [
             60,
-            60
+            100
           ],
           "hp": 1,
           "speed": 1
@@ -330,17 +312,17 @@
         {
           "type": "slime",
           "pos": [
-            250,
-            180
+            60,
+            100
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "slime",
+          "type": "guard",
           "pos": [
-            600,
-            380
+            60,
+            60
           ],
           "hp": 1,
           "speed": 1
@@ -435,20 +417,20 @@
         {
           "type": "slime",
           "pos": [
-            450,
-            300
+            60,
+            60
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "wizard",
+          "type": "guard",
           "pos": [
-            600,
-            250
+            60,
+            80
           ],
-          "hp": 3,
-          "speed": 1.5
+          "hp": 1,
+          "speed": 1
         }
       ]
     },
@@ -538,19 +520,10 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "bat",
-          "pos": [
-            500,
-            200
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
           "type": "slime",
           "pos": [
             60,
-            100
+            80
           ],
           "hp": 1,
           "speed": 1
@@ -667,29 +640,11 @@
         {
           "type": "slime",
           "pos": [
-            250,
-            180
+            60,
+            100
           ],
           "hp": 1,
           "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
-            300,
-            350
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            550,
-            280
-          ],
-          "hp": 2,
-          "speed": 2
         }
       ]
     },
@@ -790,22 +745,13 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "bat",
+          "type": "slime",
           "pos": [
-            250,
-            200
+            60,
+            60
           ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "bat",
-          "pos": [
-            520,
-            300
-          ],
-          "hp": 2,
-          "speed": 2
+          "hp": 1,
+          "speed": 1
         }
       ]
     },
@@ -908,17 +854,8 @@
         {
           "type": "slime",
           "pos": [
-            250,
-            260
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
-            350,
-            380
+            60,
+            80
           ],
           "hp": 1,
           "speed": 1
@@ -1016,31 +953,13 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "bat",
-          "pos": [
-            200,
-            180
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
           "type": "slime",
           "pos": [
-            350,
-            300
+            60,
+            100
           ],
           "hp": 1,
           "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            650,
-            350
-          ],
-          "hp": 3,
-          "speed": 1.5
         }
       ]
     },
@@ -1155,29 +1074,11 @@
         {
           "type": "bat",
           "pos": [
-            250,
-            200
+            60,
+            60
           ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "bat",
-          "pos": [
-            450,
-            350
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            600,
-            250
-          ],
-          "hp": 3,
-          "speed": 1.5
+          "hp": 1,
+          "speed": 1
         }
       ]
     },
@@ -1282,22 +1183,13 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "wizard",
-          "pos": [
-            450,
-            320
-          ],
-          "hp": 4,
-          "speed": 1.5
-        },
-        {
           "type": "bat",
           "pos": [
-            680,
-            500
+            60,
+            80
           ],
-          "hp": 2,
-          "speed": 2.5
+          "hp": 1,
+          "speed": 1
         }
       ]
     },
@@ -1376,28 +1268,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            250,
-            260
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
           "type": "bat",
           "pos": [
-            520,
-            230
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "slime",
-          "pos": [
             60,
-            60
+            100
           ],
           "hp": 1,
           "speed": 1
@@ -1490,31 +1364,13 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "slime",
+          "type": "bat",
           "pos": [
-            200,
-            300
+            60,
+            60
           ],
           "hp": 1,
           "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            600,
-            220
-          ],
-          "hp": 3,
-          "speed": 1.5
-        },
-        {
-          "type": "bat",
-          "pos": [
-            450,
-            350
-          ],
-          "hp": 2,
-          "speed": 2
         }
       ]
     },
@@ -1640,29 +1496,11 @@
         {
           "type": "bat",
           "pos": [
-            250,
-            250
+            60,
+            80
           ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "bat",
-          "pos": [
-            500,
-            280
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            620,
-            220
-          ],
-          "hp": 3,
-          "speed": 1.5
+          "hp": 1,
+          "speed": 1
         }
       ]
     },
@@ -1758,28 +1596,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            150,
-            300
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
           "type": "wizard",
           "pos": [
-            550,
-            200
-          ],
-          "hp": 3,
-          "speed": 1.5
-        },
-        {
-          "type": "slime",
-          "pos": [
             60,
-            80
+            60
           ],
           "hp": 1,
           "speed": 1
@@ -1895,25 +1715,7 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "bat",
-          "pos": [
-            300,
-            200
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
           "type": "wizard",
-          "pos": [
-            500,
-            250
-          ],
-          "hp": 3,
-          "speed": 1.5
-        },
-        {
-          "type": "bat",
           "pos": [
             60,
             80
@@ -2020,28 +1822,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            250,
-            250
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            450,
-            250
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
           "type": "wizard",
           "pos": [
             60,
-            60
+            100
           ],
           "hp": 1,
           "speed": 1
@@ -2117,31 +1901,13 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            250,
-            260
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
-            350,
-            350
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
           "type": "wizard",
           "pos": [
-            550,
-            200
+            60,
+            60
           ],
-          "hp": 3,
-          "speed": 1.5
+          "hp": 1,
+          "speed": 1
         }
       ]
     },
@@ -2231,22 +1997,13 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "bat",
+          "type": "wizard",
           "pos": [
-            220,
-            200
+            60,
+            80
           ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "bat",
-          "pos": [
-            500,
-            320
-          ],
-          "hp": 2,
-          "speed": 2
+          "hp": 1,
+          "speed": 1
         }
       ]
     },
@@ -2330,31 +2087,13 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "wizard",
+          "type": "guard",
           "pos": [
-            450,
-            200
+            60,
+            60
           ],
-          "hp": 4,
-          "speed": 1.5
-        },
-        {
-          "type": "bat",
-          "pos": [
-            250,
-            250
-          ],
-          "hp": 2,
-          "speed": 2
-        },
-        {
-          "type": "bat",
-          "pos": [
-            550,
-            300
-          ],
-          "hp": 2,
-          "speed": 2
+          "hp": 1,
+          "speed": 1
         }
       ]
     }

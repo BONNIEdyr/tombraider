@@ -224,11 +224,12 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
             return
 
 
-def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, screen, main_font, COLOR, draw_game):
+def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, screen, main_font, COLOR, draw_game, gui_manager,
+                          restart_action, quit_action, settings_action):
     player_rect = get_player_rect(player)
     current_room_id = get_player_room_id(player)
 
-    # 宝箱收集检测（保持不变）
+    # 宝箱收集检测
     for chest in current_room_data.get("chests", []):
         if not chest["is_got"]:
             chest_rect = pg.Rect(chest["pos"][0] - 15, chest["pos"][1] - 15, 30, 30)
@@ -237,7 +238,7 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
                 game_state["has_treasure"] = True
                 show_tip(game_state, "Found the treasure! You can go to the exit!", 3)
 
-    # 出口检测（修复缩进）
+    # 出口检测（只在20号房间）
     if current_room_id == 20 and current_room_data.get("is_exit"):
         exit_area = rooms_config["exit_detection"]
         exit_rect = pg.Rect(
@@ -247,28 +248,25 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
             exit_area["y_max"] - exit_area["y_min"]
         )
 
-        # 关键：将碰撞检测放入if内，确保只在20号房间执行
         if player_rect.colliderect(exit_rect):
-            if game_state["has_treasure"]:
-                # 1. 设置胜利提示
+            if game_state.get("has_treasure"):
+                # ① 设置胜利状态
+                gui_manager.victory = True
                 show_tip(game_state, "You win!", 2)
-                # 2. 绘制游戏画面（包含提示）
-                draw_game(screen, player, current_room_data, label_font, COLOR, minimap, room_neighbors,
-                        room_minimap_pos, rooms_config)
-                # 3. 强制刷新屏幕
-                pg.display.flip()
-                # 4. 等待2秒（处理事件避免假死）
-                start_time = pg.time.get_ticks()
-                while pg.time.get_ticks() - start_time < 2000:
-                    for event in pg.event.get():
-                        if event.type == pg.QUIT:
-                            pg.quit()
-                            sys.exit()
-                # 5. 退出游戏
-                pg.quit()
-                sys.exit()
+
+                # ② 创建结束界面按钮
+                gui_manager.show_end_buttons(
+                    restart_action=restart_action,
+                    quit_action=quit_action,
+                    settings_action=settings_action
+                )
+
+                # ③ 切换界面状态
+                gui_manager.current_screen = "end"
+                return
             else:
                 show_tip(game_state, "Treasure not found yet!", 2)
+
 
 
 
@@ -347,7 +345,7 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
     if current_room_id == 1:
         entrance_rect = pg.Rect(0, 250, WALL_WIDTH, 100)
         pg.draw.rect(screen, COLOR["GREEN"], entrance_rect, 3)
-        screen.blit(label_font.render("入口", True, COLOR["GREEN"]), (5, 280))
+        screen.blit(label_font.render("ENTRANCE", True, COLOR["GREEN"]), (5, 280))
 
     for chest in current_room_data.get("chests", []):
         color = COLOR["BLUE"] if chest["is_got"] else COLOR["YELLOW"]
@@ -495,15 +493,11 @@ def main():
         gui_manager.victory = False
         gui_manager.current_screen = "game"
 
-    gui_manager.create_button(
-    x=300, y=350, width=200, height=50,
-    text="RESTART", action=restart_game, screen_name="end"  
-    )
-    gui_manager.create_button(
-    x=300, y=420, width=200, height=50,
-    text="EXIT", action=quit_game, screen_name="end"
-    )
+    
+    def _open_settings_from_end():
+        _open_settings()
 
+   
 
     clock = pg.time.Clock()
     running = True
@@ -598,10 +592,14 @@ def main():
                 pg.display.flip()
                 pg.time.wait(1000)
                 gui_manager.victory = False
+                gui_manager.show_end_buttons(restart_action=restart_game, quit_action=quit_game, settings_action=_open_settings_from_end)
                 gui_manager.current_screen = "end"
                 continue
             
-            handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
+            handle_chest_and_exit(
+                player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game, gui_manager,
+                restart_action=restart_game, quit_action=quit_game, settings_action=_open_settings_from_end
+           )
 
             draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config)
             enemy_manager.draw(screen)
