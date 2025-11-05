@@ -50,6 +50,9 @@ class GUIManager:
         self._start_action = None
         self._quit_action = None
         self._settings_action = None
+        self.previous_screen = None
+        self._restart_action = None
+
 
     def clear_buttons(self):
         self.buttons = []
@@ -91,8 +94,10 @@ class GUIManager:
 
         # Save and Back
         self.create_button(x=300, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='SAVE', action=self._save_settings, screen_name='settings')
-        self.create_button(x=440, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='BACK', action=self._back_to_start, screen_name='settings')
+        self.create_button(x=440, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='BACK', action=self._back_to_previous, screen_name='settings')
     def show_end_buttons(self, restart_action, quit_action, settings_action=None):
+        self._restart_action = restart_action
+
         self.clear_buttons()  # 清空旧按钮（end 界面每次进入都重新生成）
 
 
@@ -128,26 +133,48 @@ class GUIManager:
         self.enemy_counts[etype] = new
 
     def _save_settings(self) -> None:
-        # invoke callback
+        """保存设置后返回进入设置前的界面"""
+        # 调用外部回调函数（例如应用敌人数量设置）
         if callable(self.settings_callback):
             try:
                 self.settings_callback(dict(self.enemy_counts))
             except Exception:
                 pass
-        # return to start screen and restore buttons
-        self.current_screen = 'start'
-        try:
-            self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
-        except Exception:
-            pass
 
-    def _back_to_start(self) -> None:
-        # discard changes and return
-        self.current_screen = 'start'
-        try:
+        # 根据来源界面决定返回位置
+        if self.previous_screen == "end":
+            # 从 end 进入 settings → 返回 end
+            self.current_screen = "end"
+            self.show_end_buttons(
+                restart_action=self._restart_action,
+                quit_action=self._quit_action,
+                settings_action=self._settings_action
+           )
+        else:
+            # 从 start 进入 settings → 返回 start
+            self.current_screen = "start"
+            self.show_start_buttons(
+                start_action=self._start_action,
+                quit_action=self._quit_action,
+                settings_action=self._settings_action
+            )
+
+
+    def _back_to_previous(self):
+        """返回到进入 settings 前的界面"""
+        if self.previous_screen is None:
+            self.previous_screen = "start"
+
+        # 切回上一个界面
+        self.current_screen = self.previous_screen
+
+        # 根据来源界面恢复对应按钮
+        if self.previous_screen == "start":
             self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
-        except Exception:
-            pass
+        elif self.previous_screen == "end":
+            # 重新显示 end 界面按钮（restart、settings、exit）
+            self.show_end_buttons(self._restart_action, self._quit_action, self._settings_action)
+
 
     def create_button(self, x: int, y: int, width: int, height: int, text: str, action, screen_name) -> None:
         """创建交互按钮"""

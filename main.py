@@ -481,17 +481,28 @@ def main():
                     totals[et] += 1
 
         gui_manager.enemy_counts.update(totals)
+        gui_manager.previous_screen = gui_manager.current_screen
         gui_manager.current_screen = 'settings'
         gui_manager.show_settings_buttons()
 
     # populate start screen buttons via GUIManager helper
     gui_manager.show_start_buttons(start_action=_game, quit_action=quit_game, settings_action=_open_settings)
     def restart_game():
-        global player, game_state, explored_rooms, room_minimap_pos
+        global player, game_state, explored_rooms, room_minimap_pos, rooms_config
         player, game_state, explored_rooms, room_minimap_pos = init_global_state()
+
+        # 重新加载配置，防止chests、enemies等状态沿用旧值
+        with open('config/rooms_config.json', 'r', encoding='utf-8') as f:
+            rooms_config = json.load(f)
+        rooms_config["rooms"] = [copy.deepcopy(room) for room in rooms_config["rooms"]]
+
+        enemy_manager.rooms_config = rooms_config
+        enemy_manager.load_all_rooms()
         enemy_manager.activate_room(player.current_room)
+
         gui_manager.victory = False
         gui_manager.current_screen = "game"
+
 
     
     def _open_settings_from_end():
