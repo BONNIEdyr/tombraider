@@ -13,6 +13,10 @@ class Player:
         self.speed = PLAYER_CONFIG["speed"]
         self.color = PLAYER_CONFIG["color"]
         self.direction = 0  # 朝向角度
+         # 新增：武器系统属性
+        self.bullet_damage = BULLET_CONFIG["damage"]  # 基础伤害
+        self.has_gun = True  # 默认有枪
+
         
         # 系统组件
         self.health_system = HealthSystem(PLAYER_CONFIG["max_health"])
@@ -68,13 +72,15 @@ class Player:
         if (self.shoot_cooldown <= 0 and 
             len(self.bullets) < BULLET_CONFIG["max_bullets"] and 
             self.health_system.is_alive and
-            self.ammo > 0):  # 新增条件
+            self.ammo > 0 and
+            self.has_gun
+            ):  # 新增条件
             
             bullet = Bullet(
                 self.x, self.y, 
                 self.direction,
                 BULLET_CONFIG["speed"],
-                BULLET_CONFIG["damage"],
+                self.bullet_damage,
                 BULLET_CONFIG["radius"]
             )
             self.bullets.append(bullet)
