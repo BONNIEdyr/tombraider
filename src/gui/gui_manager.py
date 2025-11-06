@@ -50,9 +50,6 @@ class GUIManager:
         self._start_action = None
         self._quit_action = None
         self._settings_action = None
-        self.previous_screen = None
-        self._restart_action = None
-
 
     def clear_buttons(self):
         self.buttons = []
@@ -94,30 +91,7 @@ class GUIManager:
 
         # Save and Back
         self.create_button(x=300, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='SAVE', action=self._save_settings, screen_name='settings')
-        self.create_button(x=440, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='BACK', action=self._back_to_previous, screen_name='settings')
-    def show_end_buttons(self, restart_action, quit_action, settings_action=None):
-        self._restart_action = restart_action
-
-        self.clear_buttons()  # 清空旧按钮（end 界面每次进入都重新生成）
-
-
-        self.create_button(
-            x=300, y=350, width=200, height=50,
-            text="RESTART", action=restart_action, screen_name="end"
-        )
-
-        # SETTINGS 按钮（可选）
-        if settings_action is not None:
-            self.create_button(
-                x=300, y=420, width=200, height=50,
-                text="SETTINGS", action=settings_action, screen_name="end"
-            )
-
-        # EXIT 按钮
-        self.create_button(
-            x=300, y=490, width=200, height=50,
-            text="EXIT", action=quit_action, screen_name="end"
-        )
+        self.create_button(x=440, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='BACK', action=self._back_to_start, screen_name='settings')
 
     # --- settings helpers ---
     def _adjust_enemy_count(self, etype: str, delta: int) -> None:
@@ -133,48 +107,26 @@ class GUIManager:
         self.enemy_counts[etype] = new
 
     def _save_settings(self) -> None:
-        """保存设置后返回进入设置前的界面"""
-        # 调用外部回调函数（例如应用敌人数量设置）
+        # invoke callback
         if callable(self.settings_callback):
             try:
                 self.settings_callback(dict(self.enemy_counts))
             except Exception:
                 pass
-
-        # 根据来源界面决定返回位置
-        if self.previous_screen == "end":
-            # 从 end 进入 settings → 返回 end
-            self.current_screen = "end"
-            self.show_end_buttons(
-                restart_action=self._restart_action,
-                quit_action=self._quit_action,
-                settings_action=self._settings_action
-           )
-        else:
-            # 从 start 进入 settings → 返回 start
-            self.current_screen = "start"
-            self.show_start_buttons(
-                start_action=self._start_action,
-                quit_action=self._quit_action,
-                settings_action=self._settings_action
-            )
-
-
-    def _back_to_previous(self):
-        """返回到进入 settings 前的界面"""
-        if self.previous_screen is None:
-            self.previous_screen = "start"
-
-        # 切回上一个界面
-        self.current_screen = self.previous_screen
-
-        # 根据来源界面恢复对应按钮
-        if self.previous_screen == "start":
+        # return to start screen and restore buttons
+        self.current_screen = 'start'
+        try:
             self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
-        elif self.previous_screen == "end":
-            # 重新显示 end 界面按钮（restart、settings、exit）
-            self.show_end_buttons(self._restart_action, self._quit_action, self._settings_action)
+        except Exception:
+            pass
 
+    def _back_to_start(self) -> None:
+        # discard changes and return
+        self.current_screen = 'start'
+        try:
+            self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
+        except Exception:
+            pass
 
     def create_button(self, x: int, y: int, width: int, height: int, text: str, action, screen_name) -> None:
         """创建交互按钮"""
@@ -226,6 +178,14 @@ class GUIManager:
         # 安全检查
         if player is None or game_state is None:
             return
+        
+         # 处理提示文本类型安全
+        tip_text_content = game_state.get("tip_text", "")
+        if tip_text_content is None:
+            tip_text_content = ""
+        elif not isinstance(tip_text_content, str):
+            tip_text_content = str(tip_text_content)
+
         # 每帧递减提示计时器（按帧数，假设60 FPS）并在计时结束时清除文本
         try:
             if game_state.get("tip_timer", 0) > 0:
@@ -276,8 +236,10 @@ class GUIManager:
             tip_bg = pg.Rect(200, 300, 400, 50)
             pg.draw.rect(screen, self.colors["WHITE"], tip_bg)
             pg.draw.rect(screen, self.colors["BROWN"], tip_bg, 2)
-            tip_text = self.fonts["main"].render(game_state.get("tip_text", ""), True, self.colors["BROWN"])
-            screen.blit(tip_text, tip_text.get_rect(center=tip_bg.center))
+
+
+            tip_surface = self.fonts["main"].render(tip_text_content, True, self.colors["BROWN"])
+            screen.blit(tip_surface, tip_surface.get_rect(center=tip_bg.center))
 
         # 5. 装备状态显示
         equipment_y = 35
@@ -296,18 +258,14 @@ class GUIManager:
             screen.blit(no_equip, (20, equipment_y))
 
     def draw_end_screen(self, screen: pg.Surface) -> None:
+        """绘制结束界面"""
         screen.fill(self.colors["DARK_BROWN"])
-        # 显示胜利或失败文本
+        # 结果文本
         result = "Victory! Successfully escaped!" if self.victory else "Defeat! Try again!"
         result_color = self.colors["GOLD"] if self.victory else self.colors["RED"]
         result_text = self.fonts["title"].render(result, True, result_color)
-        screen.blit(result_text, (self.screen_width // 2 - result_text.get_width() // 2, 150))
-
-        # 绘制提示
-        sub_text = self.fonts["label"].render("Choose an option below:", True, self.colors["WHITE"])
-        screen.blit(sub_text, (self.screen_width // 2 - sub_text.get_width() // 2, 230))
-
-        # 绘制所有end按钮
+        screen.blit(result_text, (self.screen_width//2 - result_text.get_width()//2, 150))
+        # 按钮
         for btn in self.buttons:
             if btn.get("screen") == "end":
                 color = self.colors["LIGHT_BROWN"] if btn["hover"] else self.colors["BROWN"]
@@ -315,7 +273,6 @@ class GUIManager:
                 pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=10)
                 text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
                 screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
-
 
     def draw(self, screen: pg.Surface, player=None, game_state=None) -> None:
         """根据当前界面状态绘制对应内容"""
