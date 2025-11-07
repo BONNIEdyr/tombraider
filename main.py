@@ -2,6 +2,7 @@ import pygame as pg
 import sys
 import json
 import copy
+import random
 
 from src.enemies.enemy_manager import EnemyManager
 from src.player.player import Player
@@ -434,14 +435,45 @@ def main():
                 # add to rooms with fewer enemies first
                 rooms = rooms_config.get("rooms", [])
                 rooms_sorted = sorted(rooms, key=lambda r: len(r.get("enemies", [])))
-                ri = 0
-                while need > 0 and rooms_sorted:
-                    room = rooms_sorted[ri % len(rooms_sorted)]
-                    offset_x = 60 + ((ri // len(rooms_sorted)) % 5) * 20
-                    offset_y = 60 + (ri % 3) * 20
-                    room.setdefault("enemies", []).append({"type": etype, "pos": [offset_x, offset_y], "hp": 1, "speed": 1})
-                    need -= 1
-                    ri += 1
+                # 如果要添加的数量少于房间数，则按权重从所有房间中随机选择不重复房间，避免总是填充前面的房间
+                if need < len(rooms_sorted):
+                    # 使用 Efraimidis–Spirakis 加权无放回采样，从所有房间中按权重抽取不重复房间
+                    rooms_all = rooms_sorted
+                    counts = [len(r.get("enemies", [])) for r in rooms_all]
+                    maxc = max(counts) if counts else 0
+                    # 权重：越少敌人的房间权重越高
+                    weights = [maxc - c + 1 for c in counts]
+
+                    # 生成随机键 key = U^(1/w)（w>0），取最大的 k 个索引
+                    keys = []
+                    for idx, w in enumerate(weights):
+                        try:
+                            if w <= 0:
+                                key = 0.0
+                            else:
+                                key = random.random() ** (1.0 / float(w))
+                        except Exception:
+                            key = random.random()
+                        keys.append((key, idx))
+
+                    # 选取拥有最大 key 值的 need 个索引（无放回）
+                    keys.sort(reverse=True)
+                    chosen_idxs = [idx for (_, idx) in keys[:need]]
+                    for i, idx in enumerate(chosen_idxs):
+                        room = rooms_all[idx]
+                        offset_x = 60 + (i % 5) * 20
+                        offset_y = 60 + (i % 3) * 20
+                        room.setdefault("enemies", []).append({"type": etype, "pos": [offset_x, offset_y], "hp": 1, "speed": 1})
+                    need = 0
+                else:
+                    ri = 0
+                    while need > 0 and rooms_sorted:
+                        room = rooms_sorted[ri % len(rooms_sorted)]
+                        offset_x = 60 + ((ri // len(rooms_sorted)) % 5) * 20
+                        offset_y = 60 + (ri % 3) * 20
+                        room.setdefault("enemies", []).append({"type": etype, "pos": [offset_x, offset_y], "hp": 1, "speed": 1})
+                        need -= 1
+                        ri += 1
             elif need < 0:
                 # remove from rooms with most enemies first
                 to_remove = -need
