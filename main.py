@@ -30,8 +30,8 @@ def init_base_config(config):
     pg.display.set_caption("古墓丽影：迷宫探险")
     
     # 加载字体（使用ui节点的字体大小）
-    main_font = pg.font.SysFont("SimHei", config["ui"]["fonts"]["main_font_size"])
-    label_font = pg.font.SysFont("SimHei", config["ui"]["fonts"]["label_font_size"])
+    main_font = pg.font.SysFont(None, config["ui"]["fonts"]["main_font_size"])
+    label_font = pg.font.SysFont(None, config["ui"]["fonts"]["label_font_size"])
     
     # 返回颜色配置（从ui节点获取）
     COLOR = config["ui"]["colors"]
@@ -232,7 +232,8 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
             return
 
 
-def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, screen, main_font, COLOR, draw_game,item_manager=None):
+def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, screen, main_font, COLOR, draw_game,
+                          gui_manager, restart_action, quit_action, settings_action, item_manager=None):
     player_rect = get_player_rect(player)
     current_room_id = get_player_room_id(player)
 
@@ -245,7 +246,6 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
                 game_state["has_treasure"] = True
                 show_tip(game_state, "Found the treasure! You can go to the exit!", 3)
 
-    # 出口检测（修复缩进）
     if current_room_id == 20 and current_room_data.get("is_exit"):
         exit_area = rooms_config["exit_detection"]
         exit_rect = pg.Rect(
@@ -255,29 +255,24 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
             exit_area["y_max"] - exit_area["y_min"]
         )
 
-        # 关键：将碰撞检测放入if内，确保只在20号房间执行
         if player_rect.colliderect(exit_rect):
-            if game_state["has_treasure"]:
-                # 1. 设置胜利提示
+            if game_state.get("has_treasure"):
+
+                gui_manager.victory = True
                 show_tip(game_state, "You win!", 2)
-                # 2. 绘制游戏画面（包含提示）
-                draw_game(screen, player, current_room_data, label_font, COLOR, minimap, room_neighbors,
-                        room_minimap_pos, rooms_config, item_manager)
-                # 3. 强制刷新屏幕
-                pg.display.flip()
-                # 4. 等待2秒（处理事件避免假死）
-                start_time = pg.time.get_ticks()
-                while pg.time.get_ticks() - start_time < 2000:
-                    for event in pg.event.get():
-                        if event.type == pg.QUIT:
-                            pg.quit()
-                            sys.exit()
-                # 5. 退出游戏
-                pg.quit()
-                sys.exit()
+
+
+                gui_manager.show_end_buttons(
+                    restart_action=restart_action,
+                    quit_action=quit_action,
+                    settings_action=settings_action
+                )
+
+
+                gui_manager.current_screen = "end"
+                return
             else:
                 show_tip(game_state, "Treasure not found yet!", 2)
-
 
 
 
@@ -356,7 +351,7 @@ def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, roo
     if current_room_id == 1:
         entrance_rect = pg.Rect(0, 250, WALL_WIDTH, 100)
         pg.draw.rect(screen, COLOR["GREEN"], entrance_rect, 3)
-        screen.blit(label_font.render("入口", True, COLOR["GREEN"]), (5, 280))
+        screen.blit(label_font.render("Entrance", True, COLOR["GREEN"]), (5, 280))
 
     for chest in current_room_data.get("chests", []):
         color = COLOR["BLUE"] if chest["is_got"] else COLOR["YELLOW"]
@@ -490,7 +485,7 @@ def main():
         sys.exit()
     
     def _open_settings():
-        # compute current totals across rooms and initialize GUI values
+        # 统计敌人总数，初始化设置界面值
         totals = {t: 0 for t in gui_manager.enemy_types}
         for room in rooms_config.get("rooms", []):
             for e in room.get("enemies", []):
@@ -499,26 +494,60 @@ def main():
                     totals[et] += 1
 
         gui_manager.enemy_counts.update(totals)
-        gui_manager.current_screen = 'settings'
+
+        gui_manager.previous_screen = gui_manager.current_screen
+        gui_manager.current_screen = "settings"
         gui_manager.show_settings_buttons()
+    def _open_settings_from_end():
+        _open_settings()
+
+
 
     # populate start screen buttons via GUIManager helper
     gui_manager.show_start_buttons(start_action=_game, quit_action=quit_game, settings_action=_open_settings)
+    
     def restart_game():
-        global player, game_state, explored_rooms, room_minimap_pos
+        global player, game_state, explored_rooms, room_minimap_pos, rooms_config, item_manager
+        print("[DEBUG] Restart button clicked!")
+
+        # 删除旧的物品存档文件
+        import os
+        if os.path.exists('config/items_state.json'):
+            os.remove('config/items_state.json')
+            print("[DEBUG] items_state.json 已删除，旧物品存档已清空。")
+
+        # 重置玩家与全局状态
         player, game_state, explored_rooms, room_minimap_pos = init_global_state()
+
+        # 重新加载房间配置（地图蓝图）
+        with open('config/rooms_config.json', 'r', encoding='utf-8') as f:
+            rooms_config = json.load(f)
+        rooms_config["rooms"] = [copy.deepcopy(room) for room in rooms_config["rooms"]]
+
+        # 重置宝箱状态
+        for room in rooms_config["rooms"]:
+            for chest in room.get("chests", []):
+                chest["is_got"] = False
+
+        # 重新加载敌人
+        enemy_manager.rooms_config = rooms_config
+        enemy_manager.load_all_rooms()
         enemy_manager.activate_room(player.current_room)
+
+        # 重新创建 ItemManager（此时文件已被删除，会自动新建干净状态）
+        item_manager = ItemManager(rooms_config)
+        print("[DEBUG] 全新 ItemManager 已创建。")
+
+        # 恢复游戏界面
         gui_manager.victory = False
         gui_manager.current_screen = "game"
 
-    gui_manager.create_button(
-    x=300, y=350, width=200, height=50,
-    text="RESTART", action=restart_game, screen_name="end"  
-    )
-    gui_manager.create_button(
-    x=300, y=420, width=200, height=50,
-    text="EXIT", action=quit_game, screen_name="end"
-    )
+        print("[DEBUG] Restart complete, 全新局面已加载。")
+
+
+
+
+    
 
 
     clock = pg.time.Clock()
@@ -627,10 +656,23 @@ def main():
                 pg.display.flip()
                 pg.time.wait(1000)
                 gui_manager.victory = False
+                gui_manager.show_end_buttons(
+                    restart_action=restart_game,
+                    quit_action=quit_game,
+                    settings_action=_open_settings_from_end
+                )
                 gui_manager.current_screen = "end"
                 continue
+
             
-            handle_chest_and_exit(player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game)
+            handle_chest_and_exit(
+                player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game,
+                gui_manager,
+                restart_action=restart_game,
+                quit_action=quit_game,
+                settings_action=_open_settings_from_end,
+                item_manager=item_manager
+            )
 
             draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config, item_manager)
             enemy_manager.draw(screen)

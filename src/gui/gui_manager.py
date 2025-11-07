@@ -20,6 +20,11 @@ class GUIManager:
         self.current_screen = "start"  # start / game / end
         self.buttons = []  # 存储按钮信息（每个按钮包含位置、文字、点击事件等）
         self.victory = False  # 用于结束界面区分"胜利"或"失败"状态
+        self._start_action = None
+        self._quit_action = None
+        self._settings_action = None
+        self._restart_action = None
+        self.previous_screen = None
 
         # 添加纹理和图标
         try:
@@ -67,6 +72,27 @@ class GUIManager:
             self.create_button(x=300, y=370, width=200, height=50, text="SETTINGS", action=settings_action, screen_name='start')
         # Exit
         self.create_button(x=300, y=440, width=200, height=50, text="EXIT", action=quit_action, screen_name='start')
+    
+
+    def show_end_buttons(self, restart_action, quit_action, settings_action=None):
+        self._restart_action = restart_action
+        self.clear_buttons()
+
+        self.create_button(
+            x=300, y=350, width=200, height=50,
+            text="RESTART", action=restart_action, screen_name="end"
+        )
+
+        if settings_action is not None:
+            self.create_button(
+                x=300, y=420, width=200, height=50,
+                text="SETTINGS", action=settings_action, screen_name="end"
+            )
+
+        self.create_button(
+            x=300, y=490, width=200, height=50,
+            text="EXIT", action=quit_action, screen_name="end"
+        )
 
     def show_settings_buttons(self):
         """Create +/- buttons and Save/Back for settings screen."""
@@ -91,7 +117,7 @@ class GUIManager:
 
         # Save and Back
         self.create_button(x=300, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='SAVE', action=self._save_settings, screen_name='settings')
-        self.create_button(x=440, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='BACK', action=self._back_to_start, screen_name='settings')
+        self.create_button(x=440, y=start_y + len(self.enemy_types) * row_h + 20, width=120, height=44, text='BACK', action=self._back_to_previous, screen_name='settings')
 
     # --- settings helpers ---
     def _adjust_enemy_count(self, etype: str, delta: int) -> None:
@@ -107,26 +133,43 @@ class GUIManager:
         self.enemy_counts[etype] = new
 
     def _save_settings(self) -> None:
-        # invoke callback
         if callable(self.settings_callback):
             try:
                 self.settings_callback(dict(self.enemy_counts))
             except Exception:
                 pass
-        # return to start screen and restore buttons
-        self.current_screen = 'start'
-        try:
-            self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
-        except Exception:
-            pass
 
-    def _back_to_start(self) -> None:
-        # discard changes and return
-        self.current_screen = 'start'
-        try:
+        if self.previous_screen == "end":
+            self.current_screen = "end"
+            self.show_end_buttons(
+                restart_action=self._restart_action,
+                quit_action=self._quit_action,
+                settings_action=self._settings_action
+            )
+        else:
+            self.current_screen = "start"
+            self.show_start_buttons(
+                start_action=self._start_action,
+                quit_action=self._quit_action,
+                settings_action=self._settings_action
+            )
+
+
+    def _back_to_previous(self):
+        if self.previous_screen is None:
+            self.previous_screen = "start"
+
+        self.current_screen = self.previous_screen
+
+        if self.previous_screen == "start":
             self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
-        except Exception:
-            pass
+        elif self.previous_screen == "end":
+            self.show_end_buttons(
+                restart_action=self._restart_action,
+                quit_action=self._quit_action,
+                settings_action=self._settings_action
+            )
+
 
     def create_button(self, x: int, y: int, width: int, height: int, text: str, action, screen_name) -> None:
         """创建交互按钮"""

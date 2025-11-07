@@ -19,7 +19,7 @@ class Item(ABC):
         self.default_colors = {
             "Medkit": (255, 0, 0),
             "Food": (0, 255, 0),
-            "Gun": (100, 100, 100),
+            #"Gun": (100, 100, 100),
             "Ammo": (255, 255, 0),
             "Extended Magazine": (0, 0, 255),
             "Enhanced Bullets": (255, 0, 255),
@@ -66,7 +66,7 @@ class Medkit(Item):
     def apply_effect(self, player):
         heal_amount = int(player.health_system.max_health * 0.5)
         player.heal(heal_amount)
-        return f"拾取了急救包！恢复{heal_amount}点生命值"
+        return f"Picked up Medkit! Restored {heal_amount} HP."
 
 class Food(Item):
     def __init__(self):
@@ -75,8 +75,7 @@ class Food(Item):
     def apply_effect(self, player):
         heal_amount = int(player.health_system.max_health * 0.2)
         player.heal(heal_amount)
-        return f"拾取了食物！恢复{heal_amount}点生命值"
-
+        return f"Ate Food! Restored {heal_amount} HP."
 class Gun(Item):
     def __init__(self):
         super().__init__("Gun", "uncommon", "assets/items/gun.png")
@@ -84,7 +83,7 @@ class Gun(Item):
     
     def apply_effect(self, player):
         player.ammo = min(player.max_ammo, player.ammo + self.ammo_amount)
-        return f"拾取了枪支！获得{self.ammo_amount}发子弹"
+        return f"Picked up Gun! +{self.ammo_amount} ammo."
 
 class Ammo(Item):
     def __init__(self):
@@ -93,7 +92,7 @@ class Ammo(Item):
     
     def apply_effect(self, player):
         player.ammo = min(player.max_ammo, player.ammo + self.ammo_amount)
-        return f"拾取了弹药包！获得{self.ammo_amount}发子弹"
+        return f"Picked up Ammo! +{self.ammo_amount} ammo."
 
 class ExtendedMagazine(Item):
     def __init__(self):
@@ -102,7 +101,8 @@ class ExtendedMagazine(Item):
     
     def apply_effect(self, player):
         player.max_ammo += self.capacity_increase
-        return f"拾取了扩容弹匣！最大子弹容量增加{self.capacity_increase}"
+        return f"Extended Magazine! Max ammo +{self.capacity_increase}."
+
 
 class EnhancedBullets(Item):
     def __init__(self):
@@ -112,7 +112,7 @@ class EnhancedBullets(Item):
     def apply_effect(self, player):
         if hasattr(player, 'bullet_damage'):
             player.bullet_damage += self.damage_increase
-        return f"拾取了强化弹头！子弹伤害增加{self.damage_increase}"
+        return f"Enhanced Bullets! Damage +{self.damage_increase}."
 
 class FallingRocksTrap(Item):
     def __init__(self):
@@ -126,7 +126,7 @@ class FallingRocksTrap(Item):
             player.take_damage(damage)
             self.activated = True
             self.activation_timer = 60
-            return f"触发了落石陷阱！受到{damage}点伤害"
+            return f"Hit by falling rocks! Took {damage} damage!"
         return ""
     
     def draw(self, screen):
@@ -144,11 +144,11 @@ class FallingRocksTrap(Item):
 class ItemManager:
     """管理游戏中的所有物品和陷阱"""
     
-    def __init__(self, rooms_config):
+    def __init__(self, rooms_config, auto_load=True):
         self.rooms_config = rooms_config
         self.room_items = {}  # room_id -> list of items
         self.initialize_items()
-    
+
     def is_valid_position(self, x, y, room_data):
         """基于实际墙壁数据的精确位置检测"""
         # 创建物品矩形
@@ -320,7 +320,7 @@ class ItemManager:
             "ammo": 25,           # 弹药 - 常见
             "trap": 20,           # 陷阱 - 较常见
             "medkit": 10,         # 急救包 - 稀有
-            "gun": 8,             # 枪支 - 稀有
+            "gun": 0,             # 枪支 - 稀有
             "magazine": 4,        # 扩容弹匣 - 很稀有
             "enhanced_bullets": 3 # 强化弹头 - 最稀有
         }
@@ -445,15 +445,12 @@ class ItemManager:
             pass
     
     def load_state(self):
-        """从文件加载物品状态"""
         try:
             with open('config/items_state.json', 'r') as f:
                 state = json.load(f)
-                
             for room_id, items_data in state.items():
                 room_id = int(room_id)
                 self.room_items[room_id] = []
-                
                 for item_data in items_data:
                     item_type = item_data['type']
                     item = self.create_item(self.get_type_key(item_type))
@@ -461,9 +458,11 @@ class ItemManager:
                         item.position = item_data['position']
                         item.collected = item_data['collected']
                         self.room_items[room_id].append(item)
+            print("[DEBUG] 物品状态加载完成（旧存档已恢复）。")
         except:
-            # 如果加载失败，重新初始化物品
+            print("[DEBUG] 加载失败，初始化新物品。")
             self.initialize_items()
+
     
     def get_type_key(self, class_name):
         """将类名映射回类型键"""
