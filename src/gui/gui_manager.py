@@ -12,9 +12,9 @@ class GUIManager:
             "title": pg.font.Font(None, 64)  # 标题字体（固定大小）
         }
         
-        # 关键修改：从game节点获取屏幕尺寸（适配你的配置文件结构）
-        self.screen_width = config["game"]["screen_width"]  # 原错误：config["screen_width"]
-        self.screen_height = config["game"]["screen_height"]  # 原错误：config["screen_height"]
+
+        self.screen_width = config["game"]["screen_width"]
+        self.screen_height = config["game"]["screen_height"]
         
         # 界面状态（开始/游戏/结束）
         self.current_screen = "start"  # start / game / end
@@ -25,6 +25,31 @@ class GUIManager:
         self._settings_action = None
         self._restart_action = None
         self.previous_screen = None
+
+        # 新增：初始化背景图片属性
+        self.backgrounds = {}
+        
+        # 新增：加载背景图片
+        try:
+            # 开始界面背景
+            self.backgrounds["start"] = pg.image.load("assets/ui/start_background.jpg").convert()
+            self.backgrounds["start"] = pg.transform.scale(self.backgrounds["start"], (self.screen_width, self.screen_height))
+        except:
+            print("Warning: Could not load start background image")
+        
+        try:
+            # 结束界面背景
+            self.backgrounds["end"] = pg.image.load("assets/ui/end_background.jpg").convert()
+            self.backgrounds["end"] = pg.transform.scale(self.backgrounds["end"], (self.screen_width, self.screen_height))
+        except:
+            print("Warning: Could not load end background image")
+        
+        try:
+            # 设置界面背景
+            self.backgrounds["settings"] = pg.image.load("assets/ui/settings_background.jpg").convert()
+            self.backgrounds["settings"] = pg.transform.scale(self.backgrounds["settings"], (self.screen_width, self.screen_height))
+        except:
+            print("Warning: Could not load settings background image")
 
         # 添加纹理和图标
         try:
@@ -55,6 +80,9 @@ class GUIManager:
         self._start_action = None
         self._quit_action = None
         self._settings_action = None
+
+        # 新增：添加 _get_current_enemy_totals 方法的默认实现
+        self._get_current_enemy_totals = lambda: {t: 0 for t in self.enemy_types}
 
     def clear_buttons(self):
         self.buttons = []
@@ -198,10 +226,22 @@ class GUIManager:
 
     def draw_start_screen(self, screen: pg.Surface) -> None:
         """绘制开始界面"""
-        screen.fill(self.colors["DARK_BROWN"])
+        # 首先绘制背景图片，而不是填充颜色
+        if hasattr(self, 'backgrounds') and "start" in self.backgrounds and self.backgrounds["start"] is not None:
+            screen.blit(self.backgrounds["start"], (0, 0))
+        else:
+            # 备用：纯色背景
+            screen.fill(self.colors["DARK_BROWN"])
+        
+        # 添加半透明覆盖层让文字更清晰
+        overlay = pg.Surface((self.screen_width, self.screen_height), pg.SRCALPHA)
+        overlay.fill((0, 0, 0, 128))  # 半透明黑色
+        screen.blit(overlay, (0, 0))
+        
         # 标题
         title = self.fonts["title"].render("Tomb Raider: Maze Adventure", True, self.colors["GOLD"])
         screen.blit(title, (self.screen_width//2 - title.get_width()//2, 150))
+        
         # 绘制按钮
         for btn in self.buttons:
             if btn.get("screen") == "start":
@@ -210,6 +250,7 @@ class GUIManager:
                 pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=10)
                 text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
                 screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
+        
         # 操作提示
         tips = ["Arrow keys to move | Space to shoot | H to use food", "Find the treasure and reach the exit to win"]
         for i, tip in enumerate(tips):
@@ -302,12 +343,24 @@ class GUIManager:
 
     def draw_end_screen(self, screen: pg.Surface) -> None:
         """绘制结束界面"""
-        screen.fill(self.colors["DARK_BROWN"])
+        # 首先绘制背景图片，而不是填充颜色
+        if hasattr(self, 'backgrounds') and "end" in self.backgrounds and self.backgrounds["end"] is not None:
+            screen.blit(self.backgrounds["end"], (0, 0))
+        else:
+            # 备用：纯色背景
+            screen.fill(self.colors["DARK_BROWN"])
+        
+        # 添加半透明覆盖层让文字更清晰
+        overlay = pg.Surface((self.screen_width, self.screen_height), pg.SRCALPHA)
+        overlay.fill((0, 0, 0, 128))  # 半透明黑色
+        screen.blit(overlay, (0, 0))
+        
         # 结果文本
         result = "Victory! Successfully escaped!" if self.victory else "Defeat! Try again!"
         result_color = self.colors["GOLD"] if self.victory else self.colors["RED"]
         result_text = self.fonts["title"].render(result, True, result_color)
         screen.blit(result_text, (self.screen_width//2 - result_text.get_width()//2, 150))
+        
         # 按钮
         for btn in self.buttons:
             if btn.get("screen") == "end":
@@ -337,22 +390,38 @@ class GUIManager:
 
     def draw_settings_screen(self, screen: pg.Surface) -> None:
         """Draw the settings screen with per-enemy count controls and total."""
-        screen.fill(self.colors["DARK_BROWN"])
+        # 首先绘制背景图片，而不是填充颜色
+        if hasattr(self, 'backgrounds') and "settings" in self.backgrounds and self.backgrounds["settings"] is not None:
+            screen.blit(self.backgrounds["settings"], (0, 0))
+        else:
+            # 备用：纯色背景
+            screen.fill(self.colors["DARK_BROWN"])
+        
+        # 添加半透明覆盖层让文字更清晰
+        overlay = pg.Surface((self.screen_width, self.screen_height), pg.SRCALPHA)
+        overlay.fill((0, 0, 0, 128))  # 半透明黑色
+        screen.blit(overlay, (0, 0))
+        
         title = self.fonts["title"].render("Settings", True, self.colors["GOLD"])
         screen.blit(title, (self.screen_width//2 - title.get_width()//2, 80))
 
         start_x = 220
         start_y = 180
         row_h = 50
+
+        # 修改这个循环部分：
         for i, t in enumerate(self.enemy_types):
             y = start_y + i * row_h
-            label = self.fonts["label"].render(self.enemy_display.get(t, t).capitalize(), True, self.colors["WHITE"])
-            screen.blit(label, (start_x, y))
-
+            
+            # 获取设置的目标数量
             val = self.enemy_counts.get(t)
             val_text = "0" if val is None else str(val)
-            val_surf = self.fonts["label"].render(val_text, True, self.colors["WHITE"])
-            screen.blit(val_surf, (start_x + 220, y))
+            
+            # 直接在敌人名称后面显示数量：Mummy: 5
+            display_name = self.enemy_display.get(t, t).capitalize()
+            label_text = f"{display_name}: {val_text}"
+            label = self.fonts["label"].render(label_text, True, self.colors["WHITE"])
+            screen.blit(label, (start_x, y))
 
         # total count display
         total = 0

@@ -8,6 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from player.player import Player
 
 def main():
+    
     pg.init()
     screen = pg.display.set_mode((800, 600))
     pg.display.set_caption("玩家角色测试 - 按H治疗, 按T受伤, 空格射击")

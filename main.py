@@ -10,7 +10,6 @@ from src.gui.gui_manager import GUIManager
 from src.items.item_manager import ItemManager
 
 
-
 def load_config():
     with open('config/game_config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -386,6 +385,13 @@ def main():
     
     # 第一步：先初始化Pygame
     pg.init()  # 确保在所有GUI组件创建之前初始化
+    
+    # 设置自定义窗口图标 - 在这里修改
+    try:
+        icon = pg.image.load("assets/ui/window_icon.png")  # 修改这个路径
+        pg.display.set_icon(icon)
+    except:
+        print("Warning: Could not load window icon")
     
     # 第二步：初始化基础配置
     global screen, main_font, label_font, COLOR
