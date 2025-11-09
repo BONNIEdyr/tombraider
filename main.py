@@ -8,6 +8,7 @@ from src.enemies.enemy_manager import EnemyManager
 from src.player.player import Player
 from src.gui.gui_manager import GUIManager
 from src.items.item_manager import ItemManager
+from src.gui.minimap import Minimap
 
 
 def load_config():
@@ -39,8 +40,6 @@ def init_base_config(config):
     return screen, main_font, label_font, COLOR
 
 
-
-
 def init_global_state():
     # 使用新的Player类
     player = Player(
@@ -56,18 +55,9 @@ def init_global_state():
     return player, game_state, explored_rooms, room_minimap_pos
 
 
-def init_minimap_config():
-    minimap_config = config["minimap"]
-    return {
-        "w": minimap_config["width"],
-        "h": minimap_config["height"],
-        "x": minimap_config["x"],
-        "y": minimap_config["y"],
-        "cell_size": minimap_config["cell_size"],
-        "is_dragging": False,
-        "drag_off_x": 0,
-        "drag_off_y": 0
-    }
+def init_minimap(config):
+    """初始化小地图"""
+    return Minimap(config)
 
 
 def get_player_rect(player):
@@ -211,7 +201,7 @@ def handle_room_switch(player, current_room_data, room_neighbors, explored_rooms
             if target_room_id not in explored_rooms:
                 explored_rooms.append(target_room_id)
                 prev_x, prev_y = room_minimap_pos[prev_room_id]
-                cell_size = minimap["cell_size"]
+                cell_size = minimap.cell_size
 
                 if gap_dir == "left":
                     new_x, new_y = prev_x - cell_size, prev_y
@@ -275,111 +265,6 @@ def handle_chest_and_exit(player, current_room_data, game_state, rooms_config, s
                 show_tip(game_state, "Treasure not found yet!", 2)
 
 
-
-def draw_minimap(screen, minimap, room_minimap_pos, room_neighbors, player, COLOR):
-    minimap_rect = pg.Rect(minimap["x"], minimap["y"], minimap["w"], minimap["h"])
-    pg.draw.rect(screen, COLOR["GRAY"], minimap_rect)
-    pg.draw.rect(screen, COLOR["BLACK"], minimap_rect, 2)
-
-    if not room_minimap_pos:
-        return
-
-    all_x = [pos[0] for pos in room_minimap_pos.values()]
-    all_y = [pos[1] for pos in room_minimap_pos.values()]
-    min_x, max_x, min_y, max_y = min(all_x), max(all_x), min(all_y), max(all_y)
-
-    offset_x = minimap["x"] + (minimap["w"] - (max_x - min_x + minimap["cell_size"])) // 2
-    offset_y = minimap["y"] + (minimap["h"] - (max_y - min_y + minimap["cell_size"])) // 2
-
-    room_rects = {}
-    for room_id, (rel_x, rel_y) in room_minimap_pos.items():
-        draw_x = offset_x + (rel_x - min_x)
-        draw_y = offset_y + (rel_y - min_y)
-        room_rect = pg.Rect(draw_x, draw_y, minimap["cell_size"], minimap["cell_size"])
-        pg.draw.rect(screen, COLOR["LIGHT_GRAY"], room_rect)
-        pg.draw.rect(screen, COLOR["BLACK"], room_rect, 1)
-        room_rects[room_id] = room_rect
-
-    for curr_room_id, connections in room_neighbors.items():
-        curr_room_id = int(curr_room_id)
-        if curr_room_id not in room_rects:
-            continue
-        for direction, neighbor_id in connections.items():
-            if neighbor_id not in room_rects:
-                continue
-            curr_rect = room_rects[curr_room_id]
-            neighbor_rect = room_rects[neighbor_id]
-            if direction == "right":
-                pg.draw.line(screen, COLOR["BLACK"], curr_rect.midright, neighbor_rect.midleft, 2)
-            elif direction == "left":
-                pg.draw.line(screen, COLOR["BLACK"], curr_rect.midleft, neighbor_rect.midright, 2)
-            elif direction == "top":
-                pg.draw.line(screen, COLOR["BLACK"], curr_rect.midtop, neighbor_rect.midbottom, 2)
-            elif direction == "bottom":
-                pg.draw.line(screen, COLOR["BLACK"], curr_rect.midbottom, neighbor_rect.midtop, 2)
-
-    current_room_id = get_player_room_id(player)
-    if current_room_id in room_rects:
-        pg.draw.circle(screen, COLOR["RED"], room_rects[current_room_id].center, 3)
-
-
-def handle_minimap_drag(event, minimap):
-    if event.type == pg.MOUSEBUTTONDOWN:
-        minimap_rect = pg.Rect(minimap["x"], minimap["y"], minimap["w"], minimap["h"])
-        if minimap_rect.collidepoint(event.pos):
-            minimap["is_dragging"] = True
-            minimap["drag_off_x"] = event.pos[0] - minimap["x"]
-            minimap["drag_off_y"] = event.pos[1] - minimap["y"]
-    elif event.type == pg.MOUSEBUTTONUP:
-        minimap["is_dragging"] = False
-    elif event.type == pg.MOUSEMOTION and minimap["is_dragging"]:
-        new_x = event.pos[0] - minimap["drag_off_x"]
-        new_y = event.pos[1] - minimap["drag_off_y"]
-        minimap["x"] = max(0, min(new_x, SCREEN_WIDTH - minimap["w"]))
-        minimap["y"] = max(0, min(new_y, SCREEN_HEIGHT - minimap["h"]))
-
-
-def draw_game(screen, player, current_room_data, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config, item_manager):
-    screen.fill(COLOR["WHITE"])
-
-
-    for wall in current_room_data["walls"]:
-        pg.draw.rect(screen, COLOR["BROWN"], (wall[0], wall[1], wall[2], wall[3]))
-
-    current_room_id = get_player_room_id(player)
-    
-    if current_room_id == 1:
-        entrance_rect = pg.Rect(0, 250, WALL_WIDTH, 100)
-        pg.draw.rect(screen, COLOR["GREEN"], entrance_rect, 3)
-        screen.blit(label_font.render("Entrance", True, COLOR["GREEN"]), (5, 280))
-
-    for chest in current_room_data.get("chests", []):
-        color = COLOR["BLUE"] if chest["is_got"] else COLOR["YELLOW"]
-        pg.draw.circle(screen, color, chest["pos"], 15)
-
-    if current_room_id == 20:
-        exit_area = rooms_config["exit_detection"]
-        pg.draw.rect(screen, COLOR["GREEN"],
-                     (exit_area["x_min"], exit_area["y_min"],
-                      SCREEN_WIDTH - exit_area["x_min"], exit_area["y_max"] - exit_area["y_min"]), 3)
-        screen.blit(label_font.render("EXIT", True, COLOR["GREEN"]),
-                    (exit_area["x_min"] + 10, exit_area["y_min"] + 10))
-        
-     # 绘制物品
-    if item_manager is not None:
-        item_manager.draw_room_items(screen, current_room_id)
-
-    # 绘制玩家（兼容对象和字典）
-    if hasattr(player, 'draw'):
-        player.draw(screen)
-        player.draw_bullets(screen)  # 绘制子弹
-    else:
-        pg.draw.circle(screen, COLOR["GREEN"], player["pos"], player["radius"])
-
-    draw_minimap(screen, minimap, room_minimap_pos, room_neighbors, player, COLOR)
-
-
-
 def main():
     config = load_config()
     
@@ -403,7 +288,7 @@ def main():
     # 其他初始化逻辑保持不变
     global player, game_state, explored_rooms, room_minimap_pos, minimap, room_neighbors
     player, game_state, explored_rooms, room_minimap_pos = init_global_state()
-    minimap = init_minimap_config()
+    minimap = init_minimap(config)
 
     with open('config/rooms_config.json', 'r', encoding='utf-8') as f:
         rooms_config = json.load(f)
@@ -640,7 +525,7 @@ def main():
                 elif event.type == pg.KEYDOWN:
                     if event.key == pg.K_SPACE:
                         player.shoot()
-                handle_minimap_drag(event, minimap)
+                minimap.handle_events(event)
 
             keys = pg.key.get_pressed()
             player.update(keys, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -689,8 +574,19 @@ def main():
                     player.take_damage(damage)
             if not player.health_system.is_alive:
                 show_tip(game_state, "You Died!", 1)
-                draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config, item_manager)
-                gui_manager.draw(screen, player, game_state)  # 让HUD绘制tip
+                # 修改这里：使用新的绘制方式
+                gui_manager.draw(
+                    screen, 
+                    player, 
+                    game_state,
+                    current_room_data=current_room,
+                    minimap=minimap,
+                    room_neighbors=room_neighbors,
+                    room_minimap_pos=room_minimap_pos,
+                    rooms_config=rooms_config,
+                    item_manager=item_manager,
+                    enemy_manager=enemy_manager
+                )
                 pg.display.flip()
                 pg.time.wait(1000)
                 gui_manager.victory = False
@@ -704,7 +600,7 @@ def main():
 
             
             handle_chest_and_exit(
-                player, current_room, game_state, rooms_config, screen, main_font, COLOR, draw_game,
+                player, current_room, game_state, rooms_config, screen, main_font, COLOR, None,  # 移除了draw_game参数
                 gui_manager,
                 restart_action=restart_game,
                 quit_action=quit_game,
@@ -712,10 +608,19 @@ def main():
                 item_manager=item_manager
             )
 
-            draw_game(screen, player, current_room, label_font, COLOR, minimap, room_neighbors, room_minimap_pos, rooms_config, item_manager)
-            enemy_manager.draw(screen)
-            
-            gui_manager.draw(screen, player, game_state)
+            # 修改这里：使用新的绘制方式
+            gui_manager.draw(
+                screen, 
+                player, 
+                game_state,
+                current_room_data=current_room,
+                minimap=minimap,
+                room_neighbors=room_neighbors,
+                room_minimap_pos=room_minimap_pos,
+                rooms_config=rooms_config,
+                item_manager=item_manager,
+                enemy_manager=enemy_manager
+            )
             
             pg.display.flip()
             clock.tick(60)

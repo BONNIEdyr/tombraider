@@ -146,23 +146,6 @@ class Player:
         for bullet in self.bullets:
             bullet.draw(screen)
     
-    def draw_health_bar(self, screen, x, y, width=100, height=10):
-        """绘制生命值条"""
-        # 背景（红色）
-        pg.draw.rect(screen, (255, 0, 0), (x, y, width, height))
-        
-        # 当前生命值（绿色）
-        health_width = int(width * self.health_system.get_health_percentage())
-        pg.draw.rect(screen, (0, 255, 0), (x, y, health_width, height))
-        
-        # 边框
-        pg.draw.rect(screen, (255, 255, 255), (x, y, width, height), 1)
-
-        # 绘制子弹数量
-        ammo_text = f"子弹: {self.ammo}/{self.max_ammo}"
-        ammo_surf = pg.font.SysFont("SimHei", 16).render(ammo_text, True, (255, 255, 255))
-        screen.blit(ammo_surf, (x, y + 20))  # 绘制在生命值条下方
-    
     def get_rect(self):
         """获取碰撞矩形（用于与现有代码兼容）"""
         return pg.Rect(

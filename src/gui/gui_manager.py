@@ -12,9 +12,10 @@ class GUIManager:
             "title": pg.font.Font(None, 64)  # 标题字体（固定大小）
         }
         
-
+        # 游戏配置
         self.screen_width = config["game"]["screen_width"]
         self.screen_height = config["game"]["screen_height"]
+        self.wall_width = config["game"]["wall_width"]
         
         # 界面状态（开始/游戏/结束）
         self.current_screen = "start"  # start / game / end
@@ -83,6 +84,67 @@ class GUIManager:
 
         # 新增：添加 _get_current_enemy_totals 方法的默认实现
         self._get_current_enemy_totals = lambda: {t: 0 for t in self.enemy_types}
+
+    def draw_game_screen(self, screen: pg.Surface, player, current_room_data, minimap, room_neighbors, room_minimap_pos, rooms_config, item_manager, enemy_manager=None):
+        """绘制游戏场景（原来在draw_game函数中的内容）"""
+        # 清屏
+        screen.fill(self.colors["WHITE"])
+
+        # 绘制墙壁
+        for wall in current_room_data["walls"]:
+            pg.draw.rect(screen, self.colors["BROWN"], (wall[0], wall[1], wall[2], wall[3]))
+
+        current_room_id = self._get_player_room_id(player)
+        
+        # 绘制入口（仅房间1）
+        if current_room_id == 1:
+            entrance_rect = pg.Rect(0, 250, self.wall_width, 100)
+            pg.draw.rect(screen, self.colors["GREEN"], entrance_rect, 3)
+            screen.blit(self.fonts["label"].render("Entrance", True, self.colors["GREEN"]), (5, 280))
+
+        # 绘制宝箱
+        for chest in current_room_data.get("chests", []):
+            color = self.colors["BLUE"] if chest["is_got"] else self.colors["YELLOW"]
+            pg.draw.circle(screen, color, chest["pos"], 15)
+
+        # 绘制出口（仅房间20）
+        if current_room_id == 20:
+            exit_area = rooms_config["exit_detection"]
+            pg.draw.rect(screen, self.colors["GREEN"],
+                         (exit_area["x_min"], exit_area["y_min"],
+                          self.screen_width - exit_area["x_min"], exit_area["y_max"] - exit_area["y_min"]), 3)
+            screen.blit(self.fonts["label"].render("EXIT", True, self.colors["GREEN"]),
+                        (exit_area["x_min"] + 10, exit_area["y_min"] + 10))
+        
+        # 绘制物品
+        if item_manager is not None:
+            item_manager.draw_room_items(screen, current_room_id)
+
+        # 绘制玩家
+        if hasattr(player, 'draw'):
+            player.draw(screen)
+            player.draw_bullets(screen)  # 绘制子弹
+        else:
+            pg.draw.circle(screen, self.colors["GREEN"], player["pos"], player["radius"])
+
+        # 绘制小地图
+        minimap.draw(screen, room_minimap_pos, room_neighbors, player)
+        
+        # 绘制敌人（如果有敌人管理器）
+        if enemy_manager is not None:
+            enemy_manager.draw(screen)
+
+    def _get_player_rect(self, player):
+        """统一获取玩家矩形区域"""
+        if hasattr(player, 'get_rect'):
+            return player.get_rect()
+        else:
+            return pg.Rect(player["pos"][0] - player["radius"], player["pos"][1] - player["radius"],
+                           player["radius"] * 2, player["radius"] * 2)
+
+    def _get_player_room_id(self, player):
+        """统一获取玩家房间ID"""
+        return player.current_room if hasattr(player, 'current_room') else player["current_room"]
 
     def clear_buttons(self):
         self.buttons = []
@@ -263,7 +325,7 @@ class GUIManager:
         if player is None or game_state is None:
             return
         
-         # 处理提示文本类型安全
+        # 处理提示文本类型安全
         tip_text_content = game_state.get("tip_text", "")
         if tip_text_content is None:
             tip_text_content = ""
@@ -302,44 +364,31 @@ class GUIManager:
             health_text = self.fonts["main"].render("Health:  ?/?", True, self.colors["BLACK"])
             screen.blit(health_text, (230, 0))  # 上移到更顶部
 
+        # 2. 子弹数量显示（在生命值条下方）
+        # 安全访问 ammo 属性
+        ammo_count = getattr(player, 'ammo', 0)
+        ammo_text = self.fonts["main"].render(f"Ammo: {ammo_count}", True, self.colors["BLACK"])
+        screen.blit(ammo_text, (20, 25))  # 放在生命值条下方
 
-        # 2. 房间与物品信息
-        room_text = self.fonts["label"].render(
+        # 3. 房间与物品信息
+        room_text = self.fonts["main"].render(
             f"Room: {getattr(player, 'current_room', '?')}/20", True, self.colors["BLACK"])
-        screen.blit(room_text, (20, 23))
+        screen.blit(room_text, (120, 25))  
         
-        # 3. 宝藏状态
+        # 4. 宝藏状态
         treasure_text = "Treasure Found" if game_state.get("has_treasure", False) else "Treasure Not Found"
         treasure_color = self.colors["GOLD"] if game_state.get("has_treasure", False) else self.colors["RED"]
         # 使用更大的main字体（配置中main_font_size为24，label为16）
         screen.blit(self.fonts["main"].render(treasure_text, True, treasure_color), (480, 18))  # 微调y坐标使其垂直居中
 
-
-        # 4. 临时提示
+        # 5. 临时提示
         if game_state.get("tip_timer", 0) > 0:
             tip_bg = pg.Rect(200, 300, 400, 50)
             pg.draw.rect(screen, self.colors["WHITE"], tip_bg)
             pg.draw.rect(screen, self.colors["BROWN"], tip_bg, 2)
 
-
             tip_surface = self.fonts["main"].render(tip_text_content, True, self.colors["BROWN"])
             screen.blit(tip_surface, tip_surface.get_rect(center=tip_bg.center))
-
-        # 5. 装备状态显示
-        equipment_y = 35
-        if hasattr(player, 'equipment') and player.equipment:
-            # 标题用亮黄色，更醒目
-            equip_text = self.fonts["label"].render("Equipment:", True, self.colors["YELLOW"])
-            screen.blit(equip_text, (20, equipment_y))
-            
-            # 装备项用白色，与背景对比更强
-            for i, item in enumerate(player.equipment.items()):
-                equip_item = self.fonts["label"].render(f"- {item[0]}: {item[1]}", True, self.colors["WHITE"])
-                screen.blit(equip_item, (40, equipment_y + 25 + i*25))
-        else:
-            # 无装备提示也用亮黄色
-            no_equip = self.fonts["label"].render("No Equipment", True, self.colors["YELLOW"])
-            screen.blit(no_equip, (20, equipment_y))
 
     def draw_end_screen(self, screen: pg.Surface) -> None:
         """绘制结束界面"""
@@ -370,14 +419,23 @@ class GUIManager:
                 text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
                 screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
 
-    def draw(self, screen: pg.Surface, player=None, game_state=None) -> None:
+    def draw(self, screen: pg.Surface, player=None, game_state=None, 
+         current_room_data=None, minimap=None, room_neighbors=None, 
+         room_minimap_pos=None, rooms_config=None, item_manager=None, 
+         enemy_manager=None) -> None:
         """根据当前界面状态绘制对应内容"""
         if self.current_screen == "start":
             self.draw_start_screen(screen)
         elif self.current_screen == "settings":
             self.draw_settings_screen(screen)
         elif self.current_screen == "game":
-            # 确保 player 和 game_state 不为 None
+            # 首先绘制游戏场景
+            if all([current_room_data, minimap, room_neighbors, room_minimap_pos, rooms_config]):
+                self.draw_game_screen(screen, player, current_room_data, minimap, 
+                                    room_neighbors, room_minimap_pos, rooms_config, 
+                                    item_manager, enemy_manager)
+            
+            # 然后绘制HUD
             if player is not None and game_state is not None:
                 self.draw_hud(screen, player, game_state)
             else:
@@ -387,7 +445,7 @@ class GUIManager:
                 screen.blit(warning_text, (self.screen_width//2 - warning_text.get_width()//2, self.screen_height//2))
         elif self.current_screen == "end":
             self.draw_end_screen(screen)
-
+            
     def draw_settings_screen(self, screen: pg.Surface) -> None:
         """Draw the settings screen with per-enemy count controls and total."""
         # 首先绘制背景图片，而不是填充颜色
