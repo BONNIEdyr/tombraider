@@ -271,12 +271,15 @@ class GameManager:
     def restart_game(self):
         """重启游戏"""
         import os
+        
+        # 删除物品状态保存文件
         if os.path.exists('config/items_state.json'):
             os.remove('config/items_state.json')
 
+        # 重新初始化全局状态
         self.player, self.game_state, self.explored_rooms, self.room_minimap_pos = self.init_global_state()
         
-        # 重新加载房间配置
+        # 重新加载房间配置（从文件读取原始配置）
         with open('config/rooms_config.json', 'r', encoding='utf-8') as f:
             self.rooms_config = json.load(f)
         self.rooms_config["rooms"] = [copy.deepcopy(room) for room in self.rooms_config["rooms"]]
@@ -286,15 +289,23 @@ class GameManager:
             for chest in room.get("chests", []):
                 chest["is_got"] = False
 
-        # 重新加载敌人和物品
+        # 重置敌人管理器 - 使用 clear_all 方法
+        self.enemy_manager.clear_all()  # 调用现有的 clear_all 方法
         self.enemy_manager.rooms_config = self.rooms_config
         self.enemy_manager.load_all_rooms()
         self.enemy_manager.activate_room(self.player.current_room)
+
+        # 重新创建物品管理器
         self.item_manager = ItemManager(self.rooms_config)
         
         # 重置子弹管理
         if hasattr(self.player, 'clear_all_bullets'):
             self.player.clear_all_bullets()
+        
+        # 重置游戏状态
+        self.game_state = {"has_treasure": False, "tip_text": "", "tip_timer": 0}
+        
+        print("Game restarted - all enemies and items reset")
     
     def randomize_enemies(self, enemy_counts):
         """根据指定的敌人数量随机初始化敌人分布，使用合理的随机位置

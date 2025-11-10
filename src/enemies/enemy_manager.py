@@ -269,3 +269,14 @@ class EnemyManager:
         for p in self.projectiles:
             p.kill()
         self.projectiles.empty()
+    
+    # 在 EnemyManager 中添加重置方法
+    def reset_all_enemies(self):
+        """重置所有敌人状态"""
+        self.all_enemies.clear()
+        self.projectiles.empty()
+        self.room_projectiles.clear()
+        self.enemy_states.clear()
+        self.active_group = pg.sprite.Group()
+        self.active_room_id = None
+        self.load_all_rooms()

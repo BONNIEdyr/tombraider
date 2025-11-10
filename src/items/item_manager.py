@@ -5,6 +5,7 @@ import random
 import json
 import os
 import sys
+import copy
 from abc import ABC, abstractmethod
 
 # 基础物品类（保持不变）
@@ -476,4 +477,5 @@ class ItemManager:
             'FallingRocksTrap': 'trap'
         }
         return mapping.get(class_name, 'food')
+    
 # [file content end]
