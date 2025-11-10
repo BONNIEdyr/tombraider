@@ -27,57 +27,39 @@ class GUIManager:
         self._restart_action = None
         self.previous_screen = None
 
-        # 新增：初始化背景图片属性
         self.backgrounds = {}
-        
-        # 新增：加载背景图片
-        try:
-            # 开始界面背景
-            self.backgrounds["start"] = pg.image.load("assets/ui/start_background.jpg").convert()
-            self.backgrounds["start"] = pg.transform.scale(self.backgrounds["start"], (self.screen_width, self.screen_height))
-        except:
-            print("Warning: Could not load start background image")
-        
-        try:
-            # 结束界面背景
-            self.backgrounds["end"] = pg.image.load("assets/ui/end_background.jpg").convert()
-            self.backgrounds["end"] = pg.transform.scale(self.backgrounds["end"], (self.screen_width, self.screen_height))
-        except:
-            print("Warning: Could not load end background image")
-        
-        try:
-            # 设置界面背景
-            self.backgrounds["settings"] = pg.image.load("assets/ui/settings_background.jpg").convert()
-            self.backgrounds["settings"] = pg.transform.scale(self.backgrounds["settings"], (self.screen_width, self.screen_height))
-        except:
-            print("Warning: Could not load settings background image")
+        self.backgrounds["start"] = pg.image.load("assets/ui/start_background.jpg").convert()
+        self.backgrounds["start"] = pg.transform.scale(self.backgrounds["start"], (self.screen_width, self.screen_height))
+        self.backgrounds["end"] = pg.image.load("assets/ui/end_background.jpg").convert()
+        self.backgrounds["end"] = pg.transform.scale(self.backgrounds["end"], (self.screen_width, self.screen_height))
 
-        # 添加纹理和图标
+        self.backgrounds["settings"] = pg.image.load("assets/ui/settings_background.jpg").convert()
+        self.backgrounds["settings"] = pg.transform.scale(self.backgrounds["settings"], (self.screen_width, self.screen_height))
+
         try:
             self.icons = {
                 "health": pg.image.load("assets/ui/heart_icon.png").convert_alpha(),
                 "treasure": pg.image.load("assets/ui/treasure_icon.png").convert_alpha(),
             }
-            # 缩放图标到合适尺寸
             for key in self.icons:
                 self.icons[key] = pg.transform.scale(self.icons[key], (20, 20))
         except:
-            self.icons = {}  # 备用，没有图片时也能运行
-        # settings support
-        # internal enemy types (keys used in rooms_config)
+            self.icons = {}  
+
+       
+        self.raider_raw = pg.image.load("assets/raider.png").convert_alpha()
+        self.treasure_raw = pg.image.load("assets/treasure.png").convert_alpha()
+
         self.enemy_types = ["slime", "bat", "wizard", "guard"]
-        # display names for UI (show Mummy label for slime)
         self.enemy_display = {
             "slime": "Mummy",
             "bat": "Bat",
             "wizard": "Wizard",
             "guard": "Guard",
         }
-        # current editable counts (integers, default None means use current counts until initialized)
+    
         self.enemy_counts = {k: None for k in self.enemy_types}
-        # callback to apply settings: function(counts: Dict[str,int])
         self.settings_callback = None
-        # store start screen actions so settings can return
         self._start_action = None
         self._quit_action = None
         self._settings_action = None
@@ -86,11 +68,9 @@ class GUIManager:
         self._get_current_enemy_totals = lambda: {t: 0 for t in self.enemy_types}
 
     def draw_game_screen(self, screen: pg.Surface, player, current_room_data, minimap, room_neighbors, room_minimap_pos, rooms_config, item_manager, enemy_manager=None):
-        """绘制游戏场景（原来在draw_game函数中的内容）"""
-        # 清屏
+        """绘制游戏场景"""
         screen.fill(self.colors["WHITE"])
 
-        # 绘制墙壁
         for wall in current_room_data["walls"]:
             pg.draw.rect(screen, self.colors["BROWN"], (wall[0], wall[1], wall[2], wall[3]))
 
@@ -105,7 +85,15 @@ class GUIManager:
         # 绘制宝箱
         for chest in current_room_data.get("chests", []):
             color = self.colors["BLUE"] if chest["is_got"] else self.colors["YELLOW"]
-            pg.draw.circle(screen, color, chest["pos"], 15)
+            if self.treasure_raw is not None:
+                try:
+                    img = pg.transform.scale(self.treasure_raw, (30, 30))
+                    img_rect = img.get_rect(center=chest["pos"])
+                    screen.blit(img, img_rect.topleft)
+                except Exception:
+                    pg.draw.circle(screen, color, chest["pos"], 15)
+            else:
+                pg.draw.circle(screen, color, chest["pos"], 15)
 
         # 绘制出口（仅房间20）
         if current_room_id == 20:
@@ -125,7 +113,19 @@ class GUIManager:
             player.draw(screen)
             player.draw_bullets(screen)  # 绘制子弹
         else:
-            pg.draw.circle(screen, self.colors["GREEN"], player["pos"], player["radius"])
+            if self.raider_raw is not None:
+                try:
+                    # 将 raider 图像放大到 2.5 倍（比之前的 5 倍小一半）
+                    w = int(player["radius"] * 2 * 2.5)
+                    h = int(player["radius"] * 2 * 2.5)
+                    img = pg.transform.scale(self.raider_raw, (w, h))
+                    img_rect = img.get_rect(center=player["pos"])
+                    screen.blit(img, img_rect.topleft)
+                except Exception:
+                    # 回退到圆形
+                    pg.draw.circle(screen, self.colors["GREEN"], player["pos"], player["radius"])
+            else:
+                pg.draw.circle(screen, self.colors["GREEN"], player["pos"], player["radius"])
 
         # 绘制小地图
         minimap.draw(screen, room_minimap_pos, room_neighbors, player)

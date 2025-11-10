@@ -37,6 +37,17 @@ class Player:
         self.invincible_timer = 0
         self.current_room = 1
         self.just_switched = False
+        # 尝试加载玩家图片（可选），若不存在则保留为 None
+        try:
+            raw = pg.image.load("assets/raider.png").convert_alpha()
+            self._raider_image_raw = raw
+            # 原先放大 5 倍，现在改为放大至原来的 2.5 倍（即之前的一半）
+            w = int(self.radius * 2 * 2.5)
+            h = int(self.radius * 2 * 2.5)
+            self._raider_image = pg.transform.scale(raw, (w, h))
+        except Exception:
+            self._raider_image_raw = None
+            self._raider_image = None
     
     def switch_room(self, new_room_id):
         """切换房间时清除当前房间子弹"""
@@ -154,7 +165,12 @@ class Player:
             # 闪烁时用红色显示
             pg.draw.circle(screen, (255, 0, 0), (int(self.x), int(self.y)), self.radius)
         else:
-            pg.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
+            # 优先使用外部图片（assets/raider.png），没有图片时回退到圆形
+            if getattr(self, '_raider_image', None):
+                rect = self._raider_image.get_rect(center=(int(self.x), int(self.y)))
+                screen.blit(self._raider_image, rect.topleft)
+            else:
+                pg.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
     
     def draw_bullets(self, screen):
         """绘制当前房间的子弹"""
