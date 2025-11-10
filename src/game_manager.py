@@ -167,9 +167,11 @@ class GameManager:
                         new_x, new_y = prev_x, prev_y + cell_size
 
                     self.room_minimap_pos[target_room_id] = (new_x, new_y)
-                    
-                    # 激活新房间的敌人
+                
+                try:
                     self.enemy_manager.activate_room(target_room_id)
+                except Exception:
+                    pass
                 return
 
     def update_enemies(self):
