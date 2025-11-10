@@ -1,6 +1,7 @@
 import pygame as pg
 import sys
 import json
+import random  
 from src.game_manager import GameManager
 from src.gui.gui_manager import GUIManager
 
@@ -28,6 +29,10 @@ def main():
     # 初始化管理器
     game_manager = GameManager(config)
     gui_manager = GUIManager(config)
+    
+    # 初始化敌人数量显示
+    current_totals = game_manager.get_current_enemy_totals()
+    gui_manager.enemy_counts = {t: current_totals.get(t, 0) for t in gui_manager.enemy_types}
 
     # 设置回调函数
     def setup_gui_callbacks():
@@ -40,14 +45,7 @@ def main():
             sys.exit()
         
         def _open_settings():
-            # 统计敌人总数
-            totals = {t: 0 for t in gui_manager.enemy_types}
-            for room in game_manager.rooms_config.get("rooms", []):
-                for e in room.get("enemies", []):
-                    et = (e.get("type") or "").lower()
-                    if et in totals:
-                        totals[et] += 1
-            gui_manager.enemy_counts.update(totals)
+            # 统计敌人总数（现在直接从 enemy_counts 获取）
             gui_manager.previous_screen = gui_manager.current_screen
             gui_manager.current_screen = "settings"
             gui_manager.show_settings_buttons()
@@ -59,12 +57,20 @@ def main():
             game_manager.restart_game()
             gui_manager.victory = False
             gui_manager.current_screen = "game"
+            
+            # 重启后更新敌人数量显示
+            current_totals = game_manager.get_current_enemy_totals()
+            gui_manager.enemy_counts.update(current_totals)
 
         # 设置回调
         def apply_settings(counts):
-            # 这里实现设置应用逻辑（暂时留空）
-            pass
+            # 调用 GameManager 的随机化敌人方法
+            game_manager.randomize_enemies(counts)
             
+            # 更新 GUI 显示的敌人数量
+            current_totals = game_manager.get_current_enemy_totals()
+            gui_manager.enemy_counts.update(current_totals)
+                
         gui_manager.settings_callback = apply_settings
         gui_manager.show_start_buttons(start_action=_game, quit_action=quit_game, settings_action=_open_settings)
         

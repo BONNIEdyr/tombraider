@@ -20,11 +20,14 @@ class Player:
         
         # 系统组件
         self.health_system = HealthSystem(PLAYER_CONFIG["max_health"])
-        self.bullets = []
+        self.bullets = []  # 当前房间的子弹
 
         # 子弹数量相关属性
         self.ammo = BULLET_CONFIG["initial_ammo"]  # 当前子弹数量
         self.max_ammo = BULLET_CONFIG["max_ammo"]  # 最大子弹数量
+        
+        # 房间子弹管理
+        self.room_bullets = {}  # room_id -> bullets list
         
         # 状态
         self.is_moving = False
@@ -34,6 +37,18 @@ class Player:
         self.invincible_timer = 0
         self.current_room = 1
         self.just_switched = False
+    
+    def switch_room(self, new_room_id):
+        """切换房间时清除当前房间子弹"""
+        # 不保存子弹，直接清除当前房间的子弹
+        self.room_bullets[self.current_room] = []
+        
+        # 切换到新房间
+        self.current_room = new_room_id
+        self.just_switched = True
+        
+        # 加载新房间的子弹（如果有）
+        self.bullets = self.room_bullets.get(new_room_id, [])
     
     def handle_input(self, keys):
         """处理键盘输入"""
@@ -111,7 +126,7 @@ class Player:
         self.update_bullets(screen_width, screen_height)
     
     def update_bullets(self, screen_width, screen_height):
-        """更新所有子弹"""
+        """更新当前房间的子弹"""
         active_bullets = []
         for bullet in self.bullets:
             bullet.update(screen_width, screen_height)
@@ -142,7 +157,7 @@ class Player:
             pg.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
     
     def draw_bullets(self, screen):
-        """绘制所有子弹"""
+        """绘制当前房间的子弹"""
         for bullet in self.bullets:
             bullet.draw(screen)
     
@@ -170,3 +185,8 @@ class Player:
             'ammo': self.ammo,  
             'max_ammo': self.max_ammo  
         }
+    
+    def clear_all_bullets(self):
+        """清空所有房间的子弹（用于重启游戏）"""
+        self.bullets = []
+        self.room_bullets.clear()

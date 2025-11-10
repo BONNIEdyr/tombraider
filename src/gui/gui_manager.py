@@ -501,3 +501,13 @@ class GUIManager:
                 pg.draw.rect(screen, self.colors["BLACK"], btn["rect"], 2, border_radius=6)
                 text_surf = self.fonts["label"].render(btn["text"], True, self.colors["WHITE"])
                 screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
+
+    def set_settings_callback(self, callback):
+        """设置敌人随机化回调函数"""
+        self.settings_callback = callback
+    
+    def init_enemy_counts(self, game_manager):
+        """初始化敌人数量显示"""
+        current_totals = game_manager.get_current_enemy_totals()
+        self.enemy_counts = {t: current_totals.get(t, 0) for t in self.enemy_types}
+

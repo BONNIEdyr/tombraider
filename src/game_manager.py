@@ -37,7 +37,9 @@ class GameManager:
         )
         player.current_room = self.config["player"]["initial_room"]
         player.just_switched = False
-        
+        player.room_bullets = {}  # 确保初始化子弹管理
+        player.bullets = []
+
         game_state = {"has_treasure": False, "tip_text": "", "tip_timer": 0}
         explored_rooms = [self.config["player"]["initial_room"]]
         room_minimap_pos = {self.config["player"]["initial_room"]: (0, 0)}
@@ -149,7 +151,7 @@ class GameManager:
                 
                 # 更新玩家位置和房间
                 self.player.x, self.player.y = new_player_pos
-                self.player.current_room = target_room_id
+                self.player.switch_room(target_room_id)  # 调用玩家的房间切换方法
                 self.player.just_switched = True
 
                 if target_room_id not in self.explored_rooms:
@@ -167,9 +169,9 @@ class GameManager:
                         new_x, new_y = prev_x, prev_y + cell_size
 
                     self.room_minimap_pos[target_room_id] = (new_x, new_y)
-                    
-                    # 激活新房间的敌人
-                    self.enemy_manager.activate_room(target_room_id)
+                
+                # 激活新房间的敌人
+                self.enemy_manager.activate_room(target_room_id)
                 return
 
     def update_enemies(self):
@@ -289,3 +291,117 @@ class GameManager:
         self.enemy_manager.load_all_rooms()
         self.enemy_manager.activate_room(self.player.current_room)
         self.item_manager = ItemManager(self.rooms_config)
+        
+        # 重置子弹管理
+        if hasattr(self.player, 'clear_all_bullets'):
+            self.player.clear_all_bullets()
+    
+    def randomize_enemies(self, enemy_counts):
+        """根据指定的敌人数量随机初始化敌人分布，使用合理的随机位置
+        
+        Args:
+            enemy_counts: 字典，键为敌人类型，值为目标数量
+        """
+        desired = {k.lower(): (None if v is None else int(v)) for k, v in (enemy_counts or {}).items()}
+
+        def generate_random_position():
+            """在房间内生成随机位置，避开墙壁"""
+            margin = 80  # 距离墙壁的最小距离
+            x = random.randint(self.wall_width + margin, self.screen_width - self.wall_width - margin)
+            y = random.randint(self.wall_width + margin, self.screen_height - self.wall_width - margin)
+            return [x, y]
+
+        def is_valid_position(pos, existing_positions, min_distance=40):
+            """检查位置是否有效（不与其他敌人太近）"""
+            for existing_pos in existing_positions:
+                distance = ((pos[0] - existing_pos[0]) ** 2 + (pos[1] - existing_pos[1]) ** 2) ** 0.5
+                if distance < min_distance:
+                    return False
+            return True
+
+        # 第一步：清空所有房间的敌人
+        for room in self.rooms_config.get("rooms", []):
+            room["enemies"] = []
+
+        # 第二步：按类型和数量重新生成敌人
+        for etype, target_count in desired.items():
+            if target_count is None or target_count <= 0:
+                continue
+
+            # 收集所有房间和它们现有的敌人位置
+            room_positions = {}
+            for room in self.rooms_config.get("rooms", []):
+                room_id = room["room_id"]
+                room_positions[room_id] = []
+                for enemy in room.get("enemies", []):
+                    if "pos" in enemy:
+                        room_positions[room_id].append(enemy["pos"])
+
+            # 分配敌人到各个房间
+            enemies_to_place = target_count
+            max_attempts_per_enemy = 10  # 每个敌人最多尝试次数
+
+            while enemies_to_place > 0:
+                # 随机选择一个房间
+                room = random.choice(self.rooms_config["rooms"])
+                room_id = room["room_id"]
+                
+                # 尝试找到有效位置
+                position_found = False
+                for attempt in range(max_attempts_per_enemy):
+                    new_pos = generate_random_position()
+                    
+                    # 检查位置是否有效
+                    if is_valid_position(new_pos, room_positions[room_id]):
+                        # 添加敌人到房间
+                        room.setdefault("enemies", []).append({
+                            "type": etype,
+                            "pos": new_pos,
+                            "hp": 1,
+                            "speed": 1
+                        })
+                        room_positions[room_id].append(new_pos)
+                        position_found = True
+                        break
+                
+                # 如果找不到有效位置，强制添加（避免无限循环）
+                if not position_found:
+                    new_pos = generate_random_position()
+                    room.setdefault("enemies", []).append({
+                        "type": etype,
+                        "pos": new_pos,
+                        "hp": 1,
+                        "speed": 1
+                    })
+                    room_positions[room_id].append(new_pos)
+                    print(f"Warning: Could not find ideal position for {etype} in room {room_id}")
+
+                enemies_to_place -= 1
+
+        # 持久化更改
+        try:
+            with open('config/rooms_config.json', 'w', encoding='utf-8') as wf:
+                json.dump(self.rooms_config, wf, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Failed to write rooms_config.json: {e}")
+
+        # 重新加载敌人管理器
+        self.enemy_manager.rooms_config = self.rooms_config
+        self.enemy_manager.all_enemies.clear()
+        self.enemy_manager.projectiles.empty()
+        self.enemy_manager.room_projectiles.clear()  # 清空房间火球
+        self.enemy_manager.enemy_states.clear()  # 清空状态保存
+        self.enemy_manager.active_group = pg.sprite.Group()
+        self.enemy_manager.active_room_id = None
+        self.enemy_manager.load_all_rooms()
+        self.enemy_manager.activate_room(self.player.current_room)
+
+    def get_current_enemy_totals(self):
+        """获取当前所有房间中每种敌人的总数"""
+        totals = {t: 0 for t in self.enemy_manager.enemy_types}
+        for room in self.rooms_config.get("rooms", []):
+            for e in room.get("enemies", []):
+                et = (e.get("type") or "").lower()
+                if et in totals:
+                    totals[et] += 1
+        return totals
