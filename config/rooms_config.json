@@ -89,10 +89,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "wizard",
+          "type": "slime",
           "pos": [
-            152,
-            256
+            356,
+            184
           ],
           "hp": 1,
           "speed": 1
@@ -282,28 +282,10 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            411,
-            428
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
-            605,
-            447
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
           "type": "wizard",
           "pos": [
-            281,
-            167
+            267,
+            199
           ],
           "hp": 1,
           "speed": 1
@@ -396,10 +378,19 @@
       "is_exit": true,
       "enemies": [
         {
+          "type": "bat",
+          "pos": [
+            269,
+            253
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
           "type": "guard",
           "pos": [
-            319,
-            300
+            636,
+            431
           ],
           "hp": 1,
           "speed": 1
@@ -490,7 +481,17 @@
       },
       "chests": [],
       "is_exit": true,
-      "enemies": []
+      "enemies": [
+        {
+          "type": "slime",
+          "pos": [
+            576,
+            470
+          ],
+          "hp": 1,
+          "speed": 1
+        }
+      ]
     },
     {
       "room_id": 6,
@@ -602,8 +603,8 @@
         {
           "type": "slime",
           "pos": [
-            650,
-            139
+            429,
+            461
           ],
           "hp": 1,
           "speed": 1
@@ -611,8 +612,26 @@
         {
           "type": "bat",
           "pos": [
-            453,
-            151
+            385,
+            410
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "bat",
+          "pos": [
+            402,
+            347
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "bat",
+          "pos": [
+            189,
+            229
           ],
           "hp": 1,
           "speed": 1
@@ -714,7 +733,17 @@
       },
       "chests": [],
       "is_exit": true,
-      "enemies": []
+      "enemies": [
+        {
+          "type": "wizard",
+          "pos": [
+            575,
+            279
+          ],
+          "hp": 1,
+          "speed": 1
+        }
+      ]
     },
     {
       "room_id": 8,
@@ -811,44 +840,7 @@
       },
       "chests": [],
       "is_exit": true,
-      "enemies": [
-        {
-          "type": "slime",
-          "pos": [
-            228,
-            259
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            452,
-            250
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            137,
-            353
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            284,
-            152
-          ],
-          "hp": 1,
-          "speed": 1
-        }
-      ]
+      "enemies": []
     },
     {
       "room_id": 9,
@@ -941,10 +933,10 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "bat",
+          "type": "slime",
           "pos": [
-            452,
-            188
+            277,
+            404
           ],
           "hp": 1,
           "speed": 1
@@ -1062,17 +1054,8 @@
         {
           "type": "slime",
           "pos": [
-            397,
-            347
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            347,
-            260
+            369,
+            363
           ],
           "hp": 1,
           "speed": 1
@@ -1253,53 +1236,7 @@
       },
       "chests": [],
       "is_exit": false,
-      "enemies": [
-        {
-          "type": "slime",
-          "pos": [
-            138,
-            431
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            584,
-            280
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            181,
-            389
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            369,
-            406
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            569,
-            239
-          ],
-          "hp": 1,
-          "speed": 1
-        }
-      ]
+      "enemies": []
     },
     {
       "room_id": 13,
@@ -1387,10 +1324,19 @@
       "is_exit": true,
       "enemies": [
         {
+          "type": "bat",
+          "pos": [
+            425,
+            444
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
           "type": "wizard",
           "pos": [
-            459,
-            468
+            435,
+            344
           ],
           "hp": 1,
           "speed": 1
@@ -1517,10 +1463,19 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
+          "type": "bat",
           "pos": [
-            436,
-            379
+            258,
+            469
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            409,
+            174
           ],
           "hp": 1,
           "speed": 1
@@ -1617,7 +1572,17 @@
       },
       "chests": [],
       "is_exit": false,
-      "enemies": []
+      "enemies": [
+        {
+          "type": "slime",
+          "pos": [
+            294,
+            201
+          ],
+          "hp": 1,
+          "speed": 1
+        }
+      ]
     },
     {
       "room_id": 16,
@@ -1726,7 +1691,26 @@
       },
       "chests": [],
       "is_exit": false,
-      "enemies": []
+      "enemies": [
+        {
+          "type": "slime",
+          "pos": [
+            554,
+            228
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "bat",
+          "pos": [
+            565,
+            468
+          ],
+          "hp": 1,
+          "speed": 1
+        }
+      ]
     },
     {
       "room_id": 17,
@@ -1823,7 +1807,26 @@
       },
       "chests": [],
       "is_exit": false,
-      "enemies": []
+      "enemies": [
+        {
+          "type": "wizard",
+          "pos": [
+            486,
+            157
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            226,
+            300
+          ],
+          "hp": 1,
+          "speed": 1
+        }
+      ]
     },
     {
       "room_id": 18,
@@ -1894,10 +1897,19 @@
       "is_exit": false,
       "enemies": [
         {
+          "type": "wizard",
+          "pos": [
+            389,
+            313
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
           "type": "guard",
           "pos": [
-            300,
-            260
+            274,
+            335
           ],
           "hp": 1,
           "speed": 1
@@ -1990,19 +2002,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "bat",
+          "type": "wizard",
           "pos": [
-            544,
-            224
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            372,
-            139
+            420,
+            212
           ],
           "hp": 1,
           "speed": 1
@@ -2091,17 +2094,17 @@
         {
           "type": "slime",
           "pos": [
-            552,
-            350
+            640,
+            401
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "bat",
+          "type": "guard",
           "pos": [
-            145,
-            460
+            226,
+            291
           ],
           "hp": 1,
           "speed": 1

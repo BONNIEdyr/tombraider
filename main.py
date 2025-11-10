@@ -5,12 +5,46 @@ import random
 from src.game_manager import GameManager
 from src.gui.gui_manager import GUIManager
 
+# 新增：BGM通道常量（Pygame默认有8个通道）
+BGM_CHANNEL = 0  # 专用通道播放BGM，避免与其他音效冲突
+
 def load_config():
     with open('config/game_config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
+# 新增：初始化音频并加载BGM
+def init_audio(config):
+    pg.mixer.init()
+    # 加载所有BGM
+    bgm = {}
+    try:
+        bgm['start'] = pg.mixer.Sound(config['bgm']['start'])
+        bgm['settings'] = pg.mixer.Sound(config['bgm']['settings'])
+        bgm['game'] = pg.mixer.Sound(config['bgm']['game'])
+        bgm['win'] = pg.mixer.Sound(config['bgm']['win'])
+        bgm['die'] = pg.mixer.Sound(config['bgm']['die'])
+    except Exception as e:
+        print(f"警告:加载BGM失败 - {e}")
+    return bgm
+
+# 新增：播放BGM的函数
+def play_bgm(bgm, bgm_type, volume=0.5):
+    channel = pg.mixer.Channel(BGM_CHANNEL)
+    if bgm_type in bgm and not channel.get_busy():
+        channel.set_volume(volume)
+        channel.play(bgm[bgm_type], -1)  # -1表示无限循环
+
+# 新增：停止当前BGM
+def stop_bgm():
+    pg.mixer.Channel(BGM_CHANNEL).stop()
+
+
 def main():
     config = load_config()
+
+
+    # 初始化音频和BGM（新增）
+    bgm = init_audio(config)  # 加载所有BGM资源
     
     # 初始化Pygame
     pg.init()
@@ -37,14 +71,24 @@ def main():
     # 设置回调函数
     def setup_gui_callbacks():
         def _game():
+            # 切换到游戏界面：停止当前BGM，播放游戏BGM（新增）
+            stop_bgm()
+            play_bgm(bgm, 'game')
+
             gui_manager.current_screen = "game"
             game_manager.enemy_manager.activate_room(game_manager.player.current_room)
         
         def quit_game():
+            # 退出游戏：停止BGM（新增）
+            stop_bgm()
             pg.quit()
             sys.exit()
         
         def _open_settings():
+            # 打开设置界面：停止当前BGM，播放设置BGM（新增）
+            stop_bgm()
+            play_bgm(bgm, 'settings')
+
             # 统计敌人总数（现在直接从 enemy_counts 获取）
             gui_manager.previous_screen = gui_manager.current_screen
             gui_manager.current_screen = "settings"
@@ -54,6 +98,10 @@ def main():
             _open_settings()
         
         def restart_game():
+            # 重启游戏：停止当前BGM，播放游戏BGM（新增）
+            stop_bgm()
+            play_bgm(bgm, 'game')
+
             game_manager.restart_game()
             gui_manager.victory = False
             gui_manager.current_screen = "game"
@@ -64,6 +112,20 @@ def main():
 
         # 设置回调
         def apply_settings(counts):
+            # 应用设置后返回之前的界面，恢复对应BGM（新增）
+            prev_screen = gui_manager.previous_screen
+            stop_bgm()  # 先停止当前BGM
+            # 根据之前的界面恢复对应的BGM
+            if prev_screen == "start":
+                play_bgm(bgm, 'start')
+            elif prev_screen == "game":
+                play_bgm(bgm, 'game')
+            elif prev_screen == "end":
+                if gui_manager.victory:
+                    play_bgm(bgm, 'win')  # 胜利界面BGM
+                else:
+                    play_bgm(bgm, 'die')  # 失败界面BGM
+
             # 调用 GameManager 的随机化敌人方法
             game_manager.randomize_enemies(counts)
             
@@ -81,6 +143,9 @@ def main():
     # 主循环
     clock = pg.time.Clock()
     running = True
+
+    # 初始界面为开始界面，播放start BGM（新增）
+    play_bgm(bgm, 'start')
 
     while running:
         # 事件处理
@@ -103,6 +168,9 @@ def main():
             
             # 检查胜利条件
             if game_manager.check_chest_and_exit(gui_manager, restart_game, quit_game, open_settings_from_end):
+                # 胜利时：停止当前BGM，播放胜利BGM（新增）
+                stop_bgm()
+                play_bgm(bgm, 'win')
                 continue
             
             # 检查游戏结束条件
@@ -112,6 +180,10 @@ def main():
                 draw_game_frame(screen, game_manager, gui_manager)
                 pg.display.flip()
                 pg.time.wait(1000)
+
+                # 死亡时：停止当前BGM，播放死亡BGM（新增）
+                stop_bgm()
+                play_bgm(bgm, 'die')
                 
                 gui_manager.victory = False
                 gui_manager.show_end_buttons(
@@ -129,6 +201,7 @@ def main():
         clock.tick(60)
     
     # 退出前保存
+    stop_bgm()
     game_manager.item_manager.save_state()
     pg.quit()
 

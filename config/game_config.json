@@ -38,5 +38,12 @@
     "tip_duration": 2,
     "screen_width": 800,
     "screen_height": 600
+  },
+  "bgm": {
+    "start": "assets/audio/start_bgm.mp3",
+    "settings": "assets/audio/settings_bgm.mp3",
+    "game": "assets/audio/game_bgm.mp3",
+    "win": "assets/audio/win_bgm.mp3",
+    "die": "assets/audio/die_bgm.mp3"
   }
 }
