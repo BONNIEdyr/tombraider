@@ -70,8 +70,51 @@ class EnemyManager:
             room_data = next((r for r in self.rooms_config.get("rooms", []) if r.get("room_id") == room_id), None)
             self._ensure_room_group(room_id, room_data)
 
+        # ensure group exists now
+        room_data = next((r for r in self.rooms_config.get("rooms", []) if r.get("room_id") == room_id), None)
+        group = self.all_enemies.get(room_id, pg.sprite.Group())
+
+        # If group appears empty but room_data defines enemies, try to (re)create missing enemies
+        try:
+            if (not group or len(group) == 0) and room_data and room_data.get("enemies"):
+                # build a set of existing (type, pos) tuples for quick compare
+                existing = set()
+                for e in list(group):
+                    et = getattr(e, '__class__', None)
+                    et_name = None
+                    try:
+                        et_name = e.__class__.__name__.lower()
+                    except Exception:
+                        et_name = None
+                    pos = (getattr(e, 'rect', None).x if getattr(e, 'rect', None) else None,
+                           getattr(e, 'rect', None).y if getattr(e, 'rect', None) else None)
+                    existing.add((et_name, pos))
+
+                for enemy_data in room_data.get("enemies", []):
+                    # normalized type name
+                    t_raw = (enemy_data.get("type") or "").lower()
+                    pos = None
+                    if "pos" in enemy_data and isinstance(enemy_data["pos"], (list, tuple)) and len(enemy_data["pos"]) >= 2:
+                        pos = (int(enemy_data["pos"][0]), int(enemy_data["pos"][1]))
+                    else:
+                        x = enemy_data.get("x")
+                        y = enemy_data.get("y")
+                        if x is not None and y is not None:
+                            pos = (int(x), int(y))
+
+                    key = (t_raw + "" if t_raw else None, pos)
+                    # if this config entry not represented in existing group, create it
+                    if key not in existing:
+                        e = self._create_enemy_from_data(enemy_data)
+                        if e:
+                            group.add(e)
+
+        except Exception:
+            pass
+
         self.active_room_id = room_id
-        self.active_group = self.all_enemies.get(room_id, pg.sprite.Group())
+        self.active_group = group
+        self.all_enemies[room_id] = group
         return self.active_group
 
     def _ensure_room_group(self, room_id: int, room_data: Optional[Dict]) -> None:
