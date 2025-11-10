@@ -9,8 +9,15 @@ class Fireball(pg.sprite.Sprite):
     def __init__(self, start_x, start_y, target_x, target_y):
         super().__init__()
 
-        self.image = pg.Surface((16, 16), pg.SRCALPHA)
-        pg.draw.circle(self.image, (255, 100, 0), (8, 8), 8)
+        # 优先使用专用的 fireball 图片（如果存在），并放大到 3 倍（48x48），否则回退到原来的圆形
+        try:
+            raw = pg.image.load("assets/fireball.png").convert_alpha()
+            # 将火球图片缩放为原始 16px 的 2.5 倍（约 40x40）
+            size = int(16 * 2.5)
+            self.image = pg.transform.scale(raw, (size, size))
+        except Exception:
+            self.image = pg.Surface((16, 16), pg.SRCALPHA)
+            pg.draw.circle(self.image, (255, 100, 0), (8, 8), 8)
 
         self.rect = self.image.get_rect(center=(start_x, start_y))
 

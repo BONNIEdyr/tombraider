@@ -49,6 +49,11 @@ class GUIManager:
        
         self.raider_raw = pg.image.load("assets/raider.png").convert_alpha()
         self.treasure_raw = pg.image.load("assets/treasure.png").convert_alpha()
+        # 尝试加载已找到后的宝箱图片
+        try:
+            self.treasure_find_raw = pg.image.load("assets/treasure_find.png").convert_alpha()
+        except Exception:
+            self.treasure_find_raw = None
 
         self.enemy_types = ["slime", "bat", "wizard", "guard"]
         self.enemy_display = {
@@ -85,9 +90,16 @@ class GUIManager:
         # 绘制宝箱
         for chest in current_room_data.get("chests", []):
             color = self.colors["BLUE"] if chest["is_got"] else self.colors["YELLOW"]
-            if self.treasure_raw is not None:
+            # 已拾取时优先显示 treasure_find.png，否则使用 treasure.png，再回退到圆形
+            img_to_use = None
+            if chest.get("is_got"):
+                img_to_use = getattr(self, 'treasure_find_raw', None) or getattr(self, 'treasure_raw', None)
+            else:
+                img_to_use = getattr(self, 'treasure_raw', None)
+
+            if img_to_use is not None:
                 try:
-                    img = pg.transform.scale(self.treasure_raw, (30, 30))
+                    img = pg.transform.scale(img_to_use, (30, 30))
                     img_rect = img.get_rect(center=chest["pos"])
                     screen.blit(img, img_rect.topleft)
                 except Exception:

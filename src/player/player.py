@@ -48,6 +48,14 @@ class Player:
         except Exception:
             self._raider_image_raw = None
             self._raider_image = None
+        # 加载受伤显示图片（hurted.png），用于替换红色圆球效果
+        try:
+            hurt = pg.image.load("assets/hurted.png").convert_alpha()
+            w = int(self.radius * 2 * 2.5)
+            h = int(self.radius * 2 * 2.5)
+            self._hurted_image = pg.transform.scale(hurt, (w, h))
+        except Exception:
+            self._hurted_image = None
     
     def switch_room(self, new_room_id):
         """切换房间时清除当前房间子弹"""
@@ -162,8 +170,12 @@ class Player:
         """绘制玩家"""
         # 无敌状态闪烁效果
         if self.invincible and self.invincible_timer % 10 < 5:
-            # 闪烁时用红色显示
-            pg.draw.circle(screen, (255, 0, 0), (int(self.x), int(self.y)), self.radius)
+            # 闪烁时使用 hurted 图片（若存在），否则红色圆球
+            if getattr(self, '_hurted_image', None) is not None:
+                rect = self._hurted_image.get_rect(center=(int(self.x), int(self.y)))
+                screen.blit(self._hurted_image, rect.topleft)
+            else:
+                pg.draw.circle(screen, (255, 0, 0), (int(self.x), int(self.y)), self.radius)
         else:
             # 优先使用外部图片（assets/raider.png），没有图片时回退到圆形
             if getattr(self, '_raider_image', None):

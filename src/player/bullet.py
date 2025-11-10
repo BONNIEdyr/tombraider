@@ -1,6 +1,10 @@
 import pygame as pg
 import math
 
+# 模块级缓存：延迟加载子弹图像（在 draw 时尝试），避免在模块导入时因 display 未初始化导致失败
+_bullet_raw = None
+
+
 class Bullet:
     def __init__(self, x, y, direction, speed=8, damage=10, radius=5):
         self.x = x
@@ -34,6 +38,25 @@ class Bullet:
     def draw(self, screen):
         """绘制子弹"""
         if self.active:
+            # 优先使用 bullet 图片（延迟加载以避免在 import 时出现 display 未初始化问题）
+            global _bullet_raw
+            if _bullet_raw is None:
+                try:
+                    _bullet_raw = pg.image.load("assets/bullet.png")
+                except Exception:
+                    _bullet_raw = None
+
+            if _bullet_raw is not None:
+                try:
+                    # 将子弹图片缩放为原来直径的 2.5 倍
+                    w = int(self.radius * 2 * 2.5)
+                    h = int(self.radius * 2 * 2.5)
+                    img = pg.transform.scale(_bullet_raw, (w, h))
+                    rect = img.get_rect(center=(int(self.x), int(self.y)))
+                    screen.blit(img, rect.topleft)
+                    return
+                except Exception:
+                    pass
             pg.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
     
     def get_rect(self):
