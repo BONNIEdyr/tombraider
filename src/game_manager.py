@@ -22,6 +22,13 @@ class GameManager:
         with open('config/rooms_config.json', 'r', encoding='utf-8') as f:
             self.rooms_config = json.load(f)
         self.rooms_config["rooms"] = [copy.deepcopy(room) for room in self.rooms_config["rooms"]]
+        # Ensure chests start as not-collected on fresh load
+        for room in self.rooms_config.get("rooms", []):
+            for chest in room.get("chests", []):
+                try:
+                    chest["is_got"] = False
+                except Exception:
+                    pass
         self.room_neighbors = self.rooms_config["room_neighbors"]
         
         # 初始化管理器
@@ -187,6 +194,11 @@ class GameManager:
                 if bullet_rect.colliderect(enemy.rect):
                     if hasattr(enemy, 'take_damage'):
                         enemy.take_damage(bullet.damage)
+                        try:
+                            from src.audio import play_sound
+                            play_sound('enemy_hurt')
+                        except Exception:
+                            pass
                     hit_enemy = True
                     break
             if hit_enemy:
@@ -209,6 +221,7 @@ class GameManager:
         if item_message:
             if not isinstance(item_message, str):
                 item_message = str(item_message)
+            # 显示提示（具体音效由物品自己处理）
             self.show_tip(item_message, 2)
         
         self.item_manager.update_traps()
@@ -229,6 +242,11 @@ class GameManager:
                     chest["is_got"] = True
                     self.game_state["has_treasure"] = True
                     self.show_tip("Found the treasure! You can go to the exit!", 3)
+                    try:
+                        from src.audio import play_sound
+                        play_sound('treasure')
+                    except Exception:
+                        pass
 
         # 出口检测
         if self.player.current_room == 20 and current_room_data.get("is_exit"):

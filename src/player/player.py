@@ -3,6 +3,7 @@ import math
 from .health_system import HealthSystem
 from .bullet import Bullet
 from .constants import PLAYER_CONFIG, BULLET_CONFIG, CONTROLS
+from src.audio import play_sound
 
 class Player:
     def __init__(self, x, y):
@@ -120,6 +121,11 @@ class Player:
             self.bullets.append(bullet)
             self.shoot_cooldown = BULLET_CONFIG["cooldown"]
             self.ammo -= 1  # 减少子弹数量
+            # 播放开火音效（安全调用）
+            try:
+                play_sound('bulletshot')
+            except Exception:
+                pass
             return True
         return False
     
@@ -159,6 +165,11 @@ class Player:
             self.health_system.take_damage(damage)
             self.invincible = True
             self.invincible_timer = PLAYER_CONFIG["invincible_duration"]
+            # 播放受伤音效
+            try:
+                play_sound('ough')
+            except Exception:
+                pass
             return True
         return False
     

@@ -1,4 +1,5 @@
 import pygame as pg
+from src.audio import play_sound
 from typing import Dict, List, Tuple
 
 class GUIManager:
@@ -296,6 +297,11 @@ class GUIManager:
                 # 检测点击
                 if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                     if btn["rect"].collidepoint(mouse_pos):
+                        # 播放按钮音效（安全）
+                        try:
+                            play_sound('button')
+                        except Exception:
+                            pass
                         btn["action"]()
 
     def draw_start_screen(self, screen: pg.Surface) -> None:

@@ -7,6 +7,7 @@ import os
 import sys
 import copy
 from abc import ABC, abstractmethod
+from src.audio import play_sound
 
 # 基础物品类（保持不变）
 class Item(ABC):
@@ -67,6 +68,10 @@ class Medkit(Item):
     def apply_effect(self, player):
         heal_amount = int(player.health_system.max_health * 0.5)
         player.heal(heal_amount)
+        try:
+            play_sound('HP_up')
+        except Exception:
+            pass
         return f"Picked up Medkit! Restored {heal_amount} HP."
 
 class Food(Item):
@@ -76,6 +81,10 @@ class Food(Item):
     def apply_effect(self, player):
         heal_amount = int(player.health_system.max_health * 0.2)
         player.heal(heal_amount)
+        try:
+            play_sound('HP_up')
+        except Exception:
+            pass
         return f"Ate Food! Restored {heal_amount} HP."
 class Gun(Item):
     def __init__(self):
@@ -127,6 +136,10 @@ class FallingRocksTrap(Item):
             player.take_damage(damage)
             self.activated = True
             self.activation_timer = 60
+            try:
+                play_sound('ough')
+            except Exception:
+                pass
             return f"Hit by falling rocks! Took {damage} damage!"
         return ""
     

@@ -2,8 +2,9 @@ from .base_enemy import Enemy
 import pygame as pg
 import math
 from .projectiles.fireball import Fireball
+from src.audio import play_sound
 
-ATTACK_COOLDOWN = 120 
+ATTACK_COOLDOWN = 60 
 SCALE_FACTOR = 0.2
 
 class Wizard(Enemy):
@@ -48,7 +49,11 @@ class Wizard(Enemy):
                     player.rect.centerx, 
                     player.rect.centery
                 )
-                
+                # play firing sound (safe - no-op if missing)
+                try:
+                    play_sound('fireball')
+                except Exception:
+                    pass
                 self.attack_timer = 0
 
                 if distance < 150:
