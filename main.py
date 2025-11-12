@@ -58,7 +58,7 @@ def main():
     
     # 初始化屏幕
     screen = pg.display.set_mode((config["game"]["screen_width"], config["game"]["screen_height"]))
-    pg.display.set_caption("古墓丽影：迷宫探险")
+    pg.display.set_caption("Tomb Raider: Maze Adventure")
 
     # 初始化管理器
     game_manager = GameManager(config)

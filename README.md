@@ -1,61 +1,74 @@
-# tombraider
-这是一个使用 Python 和 Pygame 库开发的 2D 动作冒险游戏项目。
-## 文件结构
+# Tomb Raider: Maze Adventure
+
+A 2D action-adventure game developed with Python and Pygame. Players will explore rooms, combat enemies, collect treasures, and ultimately find the exit to complete their adventure in an ancient tomb maze.
+
+## Project Overview
+
+This project is a Tomb Raider-like maze exploration game. Core gameplay includes room exploration, enemy combat, item collection, and treasure hunting. The game features a modular design, encompassing player systems, enemy systems, map systems, item systems, and GUI interaction systems. It supports scene switching, progress tracking, and simple combat mechanics.
+
+## Core Features
+
+- **Maze Exploration:** Features 20 unique rooms, each 800x600 pixels, connected via gaps to enable scene transitions.
+- **Player System:** Supports movement, shooting (Spacebar), health management, and collecting items to enhance abilities.
+- **Enemy System:** Multiple enemy types (Slime, Bat, Wizard, Guard), with the Wizard capable of firing fireballs.
+- **Item System:** Includes restorative items (First-Aid Kit restores 50% health, Food restores 20% health) and traps (e.g., falling rocks).
+- **Objective Mechanic:** Players must first find the treasure before reaching the exit to win. Reaching the exit without the treasure prompts them to continue exploring.
+- **Interface Interaction:** Includes a start screen, in-game interface (with minimap), and end screen. Supports configuration like adjusting enemy count.
+
+## File Structure
+
 ```
 .
-├── assets
-│   ├── enemies
-│   │   ├── bat.png
-│   │   ├── guard.png
-│   │   ├── mummy.png
-│   │   └── wizard.png
-│   └── ui
-│       └── start_bg.png
-├── config
-│   ├── game_config.json
-│   └── rooms_config.json
-├── main.py
-├── README.md
-├── src
-│   ├── enemies
-│   │   ├── base_enemy.py
-│   │   ├── bat.py
-│   │   ├── enemy_manager.py
-│   │   ├── guard.py
-│   │   ├── __init__.py
-│   │   ├── projectiles
-│   │   │   ├── fireball.py
-│   │   │   └── __init__.py
-│   │   ├── slime.py
-│   │   └── wizard.py
-│   ├── gui
-│   │   ├── gui_manager.py
-│   │   └── minimap.py
-│   └── player
-│       ├── bullet.py
-│       ├── constants.py
-│       ├── health_system.py
-│       ├── __init__.py
-│       └── player.py
-└── test_player.py
-
-
+├── assets/           # Game assets
+│   ├── enemies/      # Enemy sprites
+│   ├── items/        # Item sprites
+│   └── ui/           # UI backgrounds, icons, etc.
+├── config/           # Configuration files
+│   ├── game_config.json   # Global game configuration (screen size, colors, etc.)
+│   ├── rooms_config.json  # Room configurations (walls, enemies, treasure positions, etc.)
+│   └── items_state.json   # Item state saving
+├── src/              # Source code
+│   ├── enemies/      # Enemy-related classes (base class, specific enemies, projectiles)
+│   ├── gui/          # Interface management (GUI, minimap)
+│   ├── items/        # Item-related classes (consumables, traps)
+│   └── player/       # Player-related classes (movement, shooting, health)
+├── main.py           # Game main entry point
+└── test_player.py    # Player-related tests
 ```
-（每更新完代码可以在根目录的命令行里运行命令“tree"得到新的项目结构目录并更新）
-### 进度
-地图部分
 
-制作了20个房间的地图，每个房间占满800\*600的窗口，走到缺口处刷新下一个房间
+## Installation and Running
 
-地图包含一个入口，一个出口，一个宝箱
+### Prerequisites
+- Python 3.x
+- Pygame library
 
-我为了检验地图的可行性做了一个简单的玩家控制和显示ui，可以增改
+### Installation and Execution
+1. Install dependencies: `pip install pygame`
+2. Run the game: `python main.py`
 
-现在代码大致可以实现玩家从初始房间入口出生，然后可以控制玩家移动到其他房间
+## Game Controls
 
-没找到房间去出口会提示还没找到宝藏，找到宝藏再去出口会提示你赢了
+- **Movement:** Arrow keys (↑↓←→) to control player movement.
+- **Shooting:** Spacebar to fire bullets (to combat enemies).
+- **Minimap:** Can be dragged to reposition. Displays explored rooms and current location.
+- **Interface:** Click buttons to navigate screens (Start/Settings/Quit, etc.).
 
-地图json文件里有初始位置，出口位置，墙壁信息，房间连接，宝箱位置信息（其他陷阱位置信息什么的没写）
+## Progress and Plans
+
+### Implemented Features
+- Map layout and switching logic for 20 rooms.
+- Player movement, shooting, and health management.
+- Spawning of multiple enemy types with basic AI (Wizard ranged attacks, enemy chasing, etc.).
+- Treasure collection and exit victory condition.
+- Basic GUI screens (Start/Game/End) and minimap.
+- Item system (restorative items, traps).
+
+### Planned Features
+- More enemy types and behavioral patterns.
+- Complex trap mechanisms (e.g., spikes, poison gas).
+- Weapon upgrade system.
+- Save and load functionality.
+- Sound effect and music optimization.
 
 
 
