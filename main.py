@@ -136,6 +136,21 @@ def main():
         gui_manager.settings_callback = apply_settings
         gui_manager.show_start_buttons(start_action=_game, quit_action=quit_game, settings_action=_open_settings)
         
+        # 新增：界面切换时的BGM回调
+        def on_screen_change(screen):
+            stop_bgm()
+            if screen == "start":
+                play_bgm(bgm, 'start')
+            elif screen == "game":
+                play_bgm(bgm, 'game')
+            elif screen == "end":
+                if gui_manager.victory:
+                    play_bgm(bgm, 'win')
+                else:
+                    play_bgm(bgm, 'die')
+        
+        gui_manager.on_screen_change_callback = on_screen_change
+        
         return restart_game, quit_game, _open_settings_from_end
 
     restart_game, quit_game, open_settings_from_end = setup_gui_callbacks()

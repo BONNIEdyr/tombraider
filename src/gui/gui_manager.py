@@ -264,6 +264,10 @@ class GUIManager:
 
         self.current_screen = self.previous_screen
 
+        # 新增：恢复对应界面的BGM
+        if hasattr(self, 'on_screen_change_callback') and callable(self.on_screen_change_callback):
+            self.on_screen_change_callback(self.current_screen)
+
         if self.previous_screen == "start":
             self.show_start_buttons(self._start_action, self._quit_action, self._settings_action)
         elif self.previous_screen == "end":
