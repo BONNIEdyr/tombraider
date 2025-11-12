@@ -51,7 +51,7 @@ class Wizard(Enemy):
                 )
                 # play firing sound (safe - no-op if missing)
                 try:
-                    play_sound('fireball')
+                    play_sound('fireball', volume=0.3)
                 except Exception:
                     pass
                 self.attack_timer = 0

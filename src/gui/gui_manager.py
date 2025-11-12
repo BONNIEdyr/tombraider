@@ -332,7 +332,7 @@ class GUIManager:
                 screen.blit(text_surf, text_surf.get_rect(center=btn["rect"].center))
         
         # 操作提示
-        tips = ["Arrow keys to move | Space to shoot | H to use food", "Find the treasure and reach the exit to win"]
+        tips = ["Arrow keys to move | Space to shoot | Mouse to move minimap", "Find the treasure and reach the exit to win"]
         for i, tip in enumerate(tips):
             text = self.fonts["label"].render(tip, True, self.colors["WHITE"])
             screen.blit(text, (self.screen_width//2 - text.get_width()//2, 500 + i*30))

@@ -69,7 +69,7 @@ class Medkit(Item):
         heal_amount = int(player.health_system.max_health * 0.5)
         player.heal(heal_amount)
         try:
-            play_sound('HP_up')
+            play_sound('HP_up', volume= 0.3)
         except Exception:
             pass
         return f"Picked up Medkit! Restored {heal_amount} HP."
@@ -82,7 +82,7 @@ class Food(Item):
         heal_amount = int(player.health_system.max_health * 0.2)
         player.heal(heal_amount)
         try:
-            play_sound('HP_up')
+            play_sound('HP_up', volume=0.3)
         except Exception:
             pass
         return f"Ate Food! Restored {heal_amount} HP."
@@ -137,7 +137,7 @@ class FallingRocksTrap(Item):
             self.activated = True
             self.activation_timer = 60
             try:
-                play_sound('ough')
+                play_sound('ough', volume=0.7)
             except Exception:
                 pass
             return f"Hit by falling rocks! Took {damage} damage!"
