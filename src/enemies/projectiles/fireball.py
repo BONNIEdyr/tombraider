@@ -3,16 +3,13 @@ import math
 
 
 class Fireball(pg.sprite.Sprite):
-    """
-    魔法师发射的投射物类
-    """
+    # This class represents a projectile fired by the wizard.
     def __init__(self, start_x, start_y, target_x, target_y):
+        # Initialize the fireball with position, velocity, and appearance.
         super().__init__()
 
-        # 优先使用专用的 fireball 图片（如果存在），并放大到 3 倍（48x48），否则回退到原来的圆形
         try:
             raw = pg.image.load("assets/fireball.png").convert_alpha()
-            # 将火球图片缩放为原始 16px 的 2.5 倍（约 40x40）
             size = int(16 * 2.5)
             self.image = pg.transform.scale(raw, (size, size))
         except Exception:
@@ -39,10 +36,8 @@ class Fireball(pg.sprite.Sprite):
         else:
             self.vel_x, self.vel_y = 0.0, 0.0
 
+    # This function updates the fireball position and lifetime.
     def update(self):
-        """
-        更新火球的位置和生命周期。
-        """
         self.x += self.vel_x
         self.y += self.vel_y
 
@@ -52,13 +47,9 @@ class Fireball(pg.sprite.Sprite):
         self.timer += 1
 
         if self.timer >= self.lifetime:
-            self.kill() 
+            self.kill()
 
+    # This function handles collision with the player and returns damage value.
     def hit_player(self, player):
-        """
-        当火球击中玩家时调用的方法。
-        :param player: 玩家对象
-        :return: 造成的伤害值
-        """
         self.kill()
         return self.damage
