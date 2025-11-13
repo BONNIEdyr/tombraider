@@ -8,13 +8,14 @@ from src.gui.gui_manager import GUIManager
 BGM_CHANNEL = 0  
 
 def load_config():
+    """Load game configuration from JSON file"""
     with open('config/game_config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
 def init_audio(config):
+    """Initialize audio system and load BGM files"""
     pg.mixer.init()
-
     bgm = {}
     try:
         bgm['start'] = pg.mixer.Sound(config['bgm']['start'])
@@ -23,71 +24,54 @@ def init_audio(config):
         bgm['win'] = pg.mixer.Sound(config['bgm']['win'])
         bgm['die'] = pg.mixer.Sound(config['bgm']['die'])
     except Exception as e:
-        print(f"警告:加载BGM失败 - {e}")
+        print(f"Warning: Failed to load BGM - {e}")
     return bgm
 
 def play_bgm(bgm, bgm_type, volume=0.5):
+    """Play background music of specified type"""
     channel = pg.mixer.Channel(BGM_CHANNEL)
     if bgm_type in bgm and not channel.get_busy():
         channel.set_volume(volume)
-        channel.play(bgm[bgm_type], -1)  # -1表示无限循环
+        channel.play(bgm[bgm_type], -1)
 
-# 停止当前BGM
 def stop_bgm():
+    """Stop currently playing background music"""
     pg.mixer.Channel(BGM_CHANNEL).stop()
 
 
 def main():
+    """Main game loop and initialization"""
     config = load_config()
-
-
-    # 初始化音频和BGM
-    bgm = init_audio(config)  # 加载所有BGM资源
-    
-    # 初始化Pygame
+    bgm = init_audio(config)
     pg.init()
-    
-    # 设置窗口图标
     try:
         icon = pg.image.load("assets/ui/window_icon.png")
         pg.display.set_icon(icon)
     except:
         print("Warning: Could not load window icon")
-    
-    # 初始化屏幕
     screen = pg.display.set_mode((config["game"]["screen_width"], config["game"]["screen_height"]))
     pg.display.set_caption("Tomb Raider: Maze Adventure")
-
-    # 初始化管理器
     game_manager = GameManager(config)
     gui_manager = GUIManager(config)
-    
-    # 初始化敌人数量显示
     current_totals = game_manager.get_current_enemy_totals()
     gui_manager.enemy_counts = {t: current_totals.get(t, 0) for t in gui_manager.enemy_types}
 
-    # 设置回调函数
     def setup_gui_callbacks():
+        """Set up callback functions for GUI interactions"""
         def _game():
-            # 切换到游戏界面：停止当前BGM，播放游戏BGM
             stop_bgm()
             play_bgm(bgm, 'game')
-
             gui_manager.current_screen = "game"
             game_manager.enemy_manager.activate_room(game_manager.player.current_room)
         
         def quit_game():
-            # 退出游戏：停止BGM
             stop_bgm()
             pg.quit()
             sys.exit()
         
         def _open_settings():
-            # 打开设置界面：停止当前BGM，播放设置BGM
             stop_bgm()
             play_bgm(bgm, 'settings')
-
-            # 统计敌人总数（现在直接从 enemy_counts 获取）
             gui_manager.previous_screen = gui_manager.current_screen
             gui_manager.current_screen = "settings"
             gui_manager.show_settings_buttons()
@@ -96,45 +80,33 @@ def main():
             _open_settings()
         
         def restart_game():
-            # 重启游戏：停止当前BGM，播放游戏BGM
             stop_bgm()
             play_bgm(bgm, 'game')
-
             game_manager.restart_game()
             gui_manager.victory = False
             gui_manager.current_screen = "game"
-            
-            # 重启后更新敌人数量显示
             current_totals = game_manager.get_current_enemy_totals()
             gui_manager.enemy_counts.update(current_totals)
 
-        # 设置回调
         def apply_settings(counts):
-            # 应用设置后返回之前的界面，恢复对应BGM
             prev_screen = gui_manager.previous_screen
-            stop_bgm()  # 先停止当前BGM
-            # 根据之前的界面恢复对应的BGM
+            stop_bgm()
             if prev_screen == "start":
                 play_bgm(bgm, 'start')
             elif prev_screen == "game":
                 play_bgm(bgm, 'game')
             elif prev_screen == "end":
                 if gui_manager.victory:
-                    play_bgm(bgm, 'win')  # 胜利界面BGM
+                    play_bgm(bgm, 'win')
                 else:
-                    play_bgm(bgm, 'die')  # 失败界面BGM
-
-            # 调用 GameManager 的随机化敌人方法
+                    play_bgm(bgm, 'die')
             game_manager.randomize_enemies(counts)
-            
-            # 更新 GUI 显示的敌人数量
             current_totals = game_manager.get_current_enemy_totals()
             gui_manager.enemy_counts.update(current_totals)
                 
         gui_manager.settings_callback = apply_settings
         gui_manager.show_start_buttons(start_action=_game, quit_action=quit_game, settings_action=_open_settings)
         
-        # 界面切换时的BGM回调
         def on_screen_change(screen):
             stop_bgm()
             if screen == "start":
@@ -152,52 +124,33 @@ def main():
         return restart_game, quit_game, _open_settings_from_end
 
     restart_game, quit_game, open_settings_from_end = setup_gui_callbacks()
-
-    # 主循环
     clock = pg.time.Clock()
     running = True
-
-    # 初始界面为开始界面，播放start BGM
     play_bgm(bgm, 'start')
 
     while running:
-        # 事件处理
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-            
             if event.type == pg.KEYDOWN and gui_manager.current_screen == "game":
                 if event.key == pg.K_SPACE:
                     game_manager.player.shoot()
-            
-            # GUI事件处理
             gui_manager.handle_events(event)
-            # 小地图事件处理
             game_manager.minimap.handle_events(event)
 
-        # 根据当前界面状态更新
         if gui_manager.current_screen == "game":
             game_manager.update()
-            
-            # 检查胜利条件
             if game_manager.check_chest_and_exit(gui_manager, restart_game, quit_game, open_settings_from_end):
-                # 胜利时：停止当前BGM，播放胜利BGM
                 stop_bgm()
                 play_bgm(bgm, 'win')
                 continue
-            
-            # 检查游戏结束条件
             if game_manager.is_player_dead():
                 game_manager.show_tip("You Died!", 1)
-                # 绘制最后画面
                 draw_game_frame(screen, game_manager, gui_manager)
                 pg.display.flip()
                 pg.time.wait(1000)
-
-                # 死亡时：停止当前BGM，播放死亡BGM
                 stop_bgm()
                 play_bgm(bgm, 'die')
-                
                 gui_manager.victory = False
                 gui_manager.show_end_buttons(
                     restart_action=restart_game,
@@ -207,19 +160,16 @@ def main():
                 gui_manager.current_screen = "end"
                 continue
 
-        # 绘制
         draw_current_screen(screen, game_manager, gui_manager)
-        
         pg.display.flip()
         clock.tick(60)
     
-    # 退出前保存
     stop_bgm()
     game_manager.item_manager.save_state()
     pg.quit()
 
 def draw_game_frame(screen, game_manager, gui_manager):
-    """绘制游戏帧"""
+    """Draw the game frame including player, enemies, and GUI elements"""
     gui_manager.draw(
         screen, 
         game_manager.player, 
@@ -234,7 +184,7 @@ def draw_game_frame(screen, game_manager, gui_manager):
     )
 
 def draw_current_screen(screen, game_manager, gui_manager):
-    """根据当前界面状态绘制"""
+    """Draw the appropriate screen based on current game state"""
     if gui_manager.current_screen == "game":
         draw_game_frame(screen, game_manager, gui_manager)
     else:
