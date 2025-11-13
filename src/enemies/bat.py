@@ -4,10 +4,10 @@ from .base_enemy import Enemy
 SCALE_FACTOR = 0.2
 
 class Bat(Enemy):
-    """
-    蝙蝠敌人类
-    """
+    # This class defines a bat enemy that tracks the player.
     TRANSPARENT_COLOR = (255, 255, 255)
+
+    # This function initializes the bat enemy with scaled image and base attributes.
     def __init__(self, x, y):
         original_image = pg.image.load("assets/enemies/bat.png").convert()
         original_image.set_colorkey(self.TRANSPARENT_COLOR)
@@ -17,10 +17,8 @@ class Bat(Enemy):
         bat_image = pg.transform.scale(original_image, (new_w, new_h))
         super().__init__(x, y, hp=30, speed=1, image=bat_image)
 
+    # This function defines the bat's specific logic to follow the player.
     def update(self, player):
-        """
-        蝙蝠的特定逻辑：追踪玩家。
-        """
         bat_center_x = self.rect.centerx
         bat_center_y = self.rect.centery
         player_center_x = player.rect.centerx

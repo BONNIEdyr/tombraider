@@ -8,12 +8,10 @@ ATTACK_COOLDOWN = 60
 SCALE_FACTOR = 0.2
 
 class Wizard(Enemy):
-    """
-    魔法师敌人类，继承自 Enemy。
-    它会保持距离，并周期性地发射投射物 (Fireball)
-    """
+    # Enemy that periodically shoots fireballs while keeping distance from the player.
     TRANSPARENT_COLOR = (255, 255, 255)
     def __init__(self, x, y):
+        # Initialize the wizard enemy with scaled image, stats, and attack properties.
         original_image = pg.image.load("assets/enemies/wizard.png").convert()
         original_image.set_colorkey(self.TRANSPARENT_COLOR)
         original_w, original_h = original_image.get_size()
@@ -26,12 +24,7 @@ class Wizard(Enemy):
         self.attack_range = 300 
 
     def update(self, player):
-        """
-        魔法师的特定逻辑：
-        1. 保持攻击计时器。
-        2. 如果计时器准备好，且玩家在范围内，则发射火球。
-        """
-        
+        # Update wizard behavior: check distance to player and shoot fireballs periodically.
         new_projectile = None
 
         dx = player.rect.centerx - self.rect.centerx
@@ -42,14 +35,12 @@ class Wizard(Enemy):
 
         if self.attack_timer >= ATTACK_COOLDOWN:
             if distance <= self.attack_range:
-
                 new_projectile = Fireball(
                     self.rect.centerx, 
                     self.rect.centery, 
                     player.rect.centerx, 
                     player.rect.centery
                 )
-                # play firing sound (safe - no-op if missing)
                 try:
                     play_sound('fireball', volume=0.3)
                 except Exception:
