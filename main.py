@@ -32,7 +32,7 @@ def play_bgm(bgm, bgm_type, volume=0.5):
         channel.set_volume(volume)
         channel.play(bgm[bgm_type], -1)  # -1表示无限循环
 
-# 新增：停止当前BGM
+# 停止当前BGM
 def stop_bgm():
     pg.mixer.Channel(BGM_CHANNEL).stop()
 
@@ -41,7 +41,7 @@ def main():
     config = load_config()
 
 
-    # 初始化音频和BGM（新增）
+    # 初始化音频和BGM
     bgm = init_audio(config)  # 加载所有BGM资源
     
     # 初始化Pygame
@@ -69,7 +69,7 @@ def main():
     # 设置回调函数
     def setup_gui_callbacks():
         def _game():
-            # 切换到游戏界面：停止当前BGM，播放游戏BGM（新增）
+            # 切换到游戏界面：停止当前BGM，播放游戏BGM
             stop_bgm()
             play_bgm(bgm, 'game')
 
@@ -77,13 +77,13 @@ def main():
             game_manager.enemy_manager.activate_room(game_manager.player.current_room)
         
         def quit_game():
-            # 退出游戏：停止BGM（新增）
+            # 退出游戏：停止BGM
             stop_bgm()
             pg.quit()
             sys.exit()
         
         def _open_settings():
-            # 打开设置界面：停止当前BGM，播放设置BGM（新增）
+            # 打开设置界面：停止当前BGM，播放设置BGM
             stop_bgm()
             play_bgm(bgm, 'settings')
 
@@ -96,7 +96,7 @@ def main():
             _open_settings()
         
         def restart_game():
-            # 重启游戏：停止当前BGM，播放游戏BGM（新增）
+            # 重启游戏：停止当前BGM，播放游戏BGM
             stop_bgm()
             play_bgm(bgm, 'game')
 
@@ -110,7 +110,7 @@ def main():
 
         # 设置回调
         def apply_settings(counts):
-            # 应用设置后返回之前的界面，恢复对应BGM（新增）
+            # 应用设置后返回之前的界面，恢复对应BGM
             prev_screen = gui_manager.previous_screen
             stop_bgm()  # 先停止当前BGM
             # 根据之前的界面恢复对应的BGM
@@ -134,7 +134,7 @@ def main():
         gui_manager.settings_callback = apply_settings
         gui_manager.show_start_buttons(start_action=_game, quit_action=quit_game, settings_action=_open_settings)
         
-        # 新增：界面切换时的BGM回调
+        # 界面切换时的BGM回调
         def on_screen_change(screen):
             stop_bgm()
             if screen == "start":
@@ -157,7 +157,7 @@ def main():
     clock = pg.time.Clock()
     running = True
 
-    # 初始界面为开始界面，播放start BGM（新增）
+    # 初始界面为开始界面，播放start BGM
     play_bgm(bgm, 'start')
 
     while running:
@@ -181,7 +181,7 @@ def main():
             
             # 检查胜利条件
             if game_manager.check_chest_and_exit(gui_manager, restart_game, quit_game, open_settings_from_end):
-                # 胜利时：停止当前BGM，播放胜利BGM（新增）
+                # 胜利时：停止当前BGM，播放胜利BGM
                 stop_bgm()
                 play_bgm(bgm, 'win')
                 continue
@@ -194,7 +194,7 @@ def main():
                 pg.display.flip()
                 pg.time.wait(1000)
 
-                # 死亡时：停止当前BGM，播放死亡BGM（新增）
+                # 死亡时：停止当前BGM，播放死亡BGM
                 stop_bgm()
                 play_bgm(bgm, 'die')
                 

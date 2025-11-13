@@ -70,7 +70,7 @@ class GUIManager:
         self._quit_action = None
         self._settings_action = None
 
-        # 新增：添加 _get_current_enemy_totals 方法的默认实现
+        # 添加 _get_current_enemy_totals 方法的默认实现
         self._get_current_enemy_totals = lambda: {t: 0 for t in self.enemy_types}
 
     def draw_game_screen(self, screen: pg.Surface, player, current_room_data, minimap, room_neighbors, room_minimap_pos, rooms_config, item_manager, enemy_manager=None):
@@ -264,7 +264,7 @@ class GUIManager:
 
         self.current_screen = self.previous_screen
 
-        # 新增：恢复对应界面的BGM
+        # 恢复对应界面的BGM
         if hasattr(self, 'on_screen_change_callback') and callable(self.on_screen_change_callback):
             self.on_screen_change_callback(self.current_screen)
 

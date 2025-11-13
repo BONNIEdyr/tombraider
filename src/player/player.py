@@ -14,7 +14,7 @@ class Player:
         self.speed = PLAYER_CONFIG["speed"]
         self.color = PLAYER_CONFIG["color"]
         self.direction = 0  # 朝向角度
-         # 新增：武器系统属性
+         # 武器系统属性
         self.bullet_damage = BULLET_CONFIG["damage"]  # 基础伤害
         self.has_gun = True  # 默认有枪
 
