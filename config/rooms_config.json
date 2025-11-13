@@ -91,8 +91,8 @@
         {
           "type": "slime",
           "pos": [
-            131,
-            286
+            519,
+            313
           ],
           "hp": 1,
           "speed": 1
@@ -101,7 +101,7 @@
           "type": "slime",
           "pos": [
             666,
-            432
+            294
           ],
           "hp": 1,
           "speed": 1
@@ -109,8 +109,35 @@
         {
           "type": "bat",
           "pos": [
-            283,
-            458
+            441,
+            234
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "wizard",
+          "pos": [
+            149,
+            219
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            201,
+            423
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            299,
+            353
           ],
           "hp": 1,
           "speed": 1
@@ -205,8 +232,17 @@
         {
           "type": "slime",
           "pos": [
-            338,
-            286
+            188,
+            159
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "slime",
+          "pos": [
+            575,
+            302
           ],
           "hp": 1,
           "speed": 1
@@ -214,8 +250,26 @@
         {
           "type": "bat",
           "pos": [
-            176,
-            273
+            613,
+            419
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "bat",
+          "pos": [
+            427,
+            359
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            308,
+            302
           ],
           "hp": 1,
           "speed": 1
@@ -321,8 +375,17 @@
         {
           "type": "slime",
           "pos": [
-            465,
-            206
+            613,
+            182
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "slime",
+          "pos": [
+            246,
+            424
           ],
           "hp": 1,
           "speed": 1
@@ -330,8 +393,8 @@
         {
           "type": "bat",
           "pos": [
-            569,
-            149
+            433,
+            283
           ],
           "hp": 1,
           "speed": 1
@@ -339,8 +402,8 @@
         {
           "type": "bat",
           "pos": [
-            233,
-            219
+            619,
+            280
           ],
           "hp": 1,
           "speed": 1
@@ -348,26 +411,8 @@
         {
           "type": "wizard",
           "pos": [
-            312,
-            282
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            205,
-            186
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            328,
-            432
+            518,
+            171
           ],
           "hp": 1,
           "speed": 1
@@ -460,19 +505,28 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "slime",
+          "type": "bat",
           "pos": [
-            379,
-            339
+            509,
+            451
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "wizard",
+          "type": "bat",
           "pos": [
-            489,
-            191
+            334,
+            236
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            238,
+            465
           ],
           "hp": 1,
           "speed": 1
@@ -565,19 +619,10 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            475,
-            222
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
           "type": "bat",
           "pos": [
-            329,
-            359
+            291,
+            381
           ],
           "hp": 1,
           "speed": 1
@@ -585,8 +630,8 @@
         {
           "type": "wizard",
           "pos": [
-            627,
-            459
+            396,
+            414
           ],
           "hp": 1,
           "speed": 1
@@ -594,8 +639,44 @@
         {
           "type": "guard",
           "pos": [
-            330,
-            259
+            199,
+            230
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            215,
+            441
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            667,
+            210
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            388,
+            226
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            481,
+            187
           ],
           "hp": 1,
           "speed": 1
@@ -712,8 +793,8 @@
         {
           "type": "slime",
           "pos": [
-            368,
-            431
+            408,
+            362
           ],
           "hp": 1,
           "speed": 1
@@ -721,35 +802,8 @@
         {
           "type": "bat",
           "pos": [
-            205,
-            241
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            535,
-            342
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            218,
-            285
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            463,
-            454
+            631,
+            457
           ],
           "hp": 1,
           "speed": 1
@@ -757,8 +811,17 @@
         {
           "type": "wizard",
           "pos": [
-            334,
-            243
+            344,
+            333
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "wizard",
+          "pos": [
+            258,
+            400
           ],
           "hp": 1,
           "speed": 1
@@ -766,8 +829,35 @@
         {
           "type": "guard",
           "pos": [
-            345,
-            392
+            255,
+            340
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            558,
+            394
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            643,
+            290
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            297,
+            448
           ],
           "hp": 1,
           "speed": 1
@@ -871,37 +961,10 @@
       "is_exit": true,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            190,
-            334
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
-            150,
-            447
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
           "type": "bat",
           "pos": [
-            504,
-            321
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "bat",
-          "pos": [
-            386,
-            133
+            509,
+            358
           ],
           "hp": 1,
           "speed": 1
@@ -909,8 +972,17 @@
         {
           "type": "wizard",
           "pos": [
-            321,
-            311
+            153,
+            196
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            406,
+            322
           ],
           "hp": 1,
           "speed": 1
@@ -1016,26 +1088,35 @@
         {
           "type": "slime",
           "pos": [
-            397,
-            243
+            354,
+            158
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "bat",
+          "type": "slime",
           "pos": [
-            388,
-            315
+            444,
+            161
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "bat",
+          "type": "wizard",
           "pos": [
-            140,
-            337
+            405,
+            136
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "guard",
+          "pos": [
+            627,
+            229
           ],
           "hp": 1,
           "speed": 1
@@ -1135,35 +1216,17 @@
         {
           "type": "slime",
           "pos": [
-            406,
-            288
+            561,
+            313
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "bat",
+          "type": "slime",
           "pos": [
-            296,
-            409
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            569,
-            386
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            582,
-            426
+            246,
+            183
           ],
           "hp": 1,
           "speed": 1
@@ -1281,8 +1344,8 @@
         {
           "type": "slime",
           "pos": [
-            261,
-            375
+            256,
+            257
           ],
           "hp": 1,
           "speed": 1
@@ -1290,8 +1353,8 @@
         {
           "type": "bat",
           "pos": [
-            631,
-            288
+            257,
+            188
           ],
           "hp": 1,
           "speed": 1
@@ -1299,8 +1362,8 @@
         {
           "type": "bat",
           "pos": [
-            164,
-            430
+            462,
+            205
           ],
           "hp": 1,
           "speed": 1
@@ -1308,17 +1371,8 @@
         {
           "type": "wizard",
           "pos": [
-            586,
-            385
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            321,
-            335
+            327,
+            220
           ],
           "hp": 1,
           "speed": 1
@@ -1426,19 +1480,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
+          "type": "wizard",
           "pos": [
-            635,
-            233
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
-            652,
-            426
+            344,
+            376
           ],
           "hp": 1,
           "speed": 1
@@ -1520,10 +1565,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "wizard",
+          "type": "bat",
           "pos": [
-            636,
-            146
+            647,
+            182
           ],
           "hp": 1,
           "speed": 1
@@ -1531,8 +1576,35 @@
         {
           "type": "wizard",
           "pos": [
-            270,
-            432
+            221,
+            306
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "wizard",
+          "pos": [
+            157,
+            406
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "wizard",
+          "pos": [
+            498,
+            439
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "wizard",
+          "pos": [
+            406,
+            442
           ],
           "hp": 1,
           "speed": 1
@@ -1540,8 +1612,8 @@
         {
           "type": "guard",
           "pos": [
-            203,
-            401
+            597,
+            289
           ],
           "hp": 1,
           "speed": 1
@@ -1636,8 +1708,35 @@
         {
           "type": "slime",
           "pos": [
-            654,
-            296
+            171,
+            224
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "slime",
+          "pos": [
+            661,
+            397
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "bat",
+          "pos": [
+            600,
+            453
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "bat",
+          "pos": [
+            189,
+            414
           ],
           "hp": 1,
           "speed": 1
@@ -1645,8 +1744,8 @@
         {
           "type": "wizard",
           "pos": [
-            233,
-            457
+            636,
+            266
           ],
           "hp": 1,
           "speed": 1
@@ -1654,8 +1753,8 @@
         {
           "type": "wizard",
           "pos": [
-            412,
-            317
+            227,
+            200
           ],
           "hp": 1,
           "speed": 1
@@ -1663,8 +1762,8 @@
         {
           "type": "guard",
           "pos": [
-            495,
-            312
+            547,
+            342
           ],
           "hp": 1,
           "speed": 1
@@ -1791,10 +1890,37 @@
       "is_exit": false,
       "enemies": [
         {
+          "type": "slime",
+          "pos": [
+            467,
+            423
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "slime",
+          "pos": [
+            577,
+            167
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "slime",
+          "pos": [
+            619,
+            300
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
           "type": "bat",
           "pos": [
-            294,
-            372
+            454,
+            331
           ],
           "hp": 1,
           "speed": 1
@@ -1802,17 +1928,17 @@
         {
           "type": "wizard",
           "pos": [
-            293,
-            456
+            274,
+            158
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "guard",
+          "type": "wizard",
           "pos": [
-            183,
-            225
+            619,
+            367
           ],
           "hp": 1,
           "speed": 1
@@ -1911,19 +2037,19 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "wizard",
+          "type": "slime",
           "pos": [
-            567,
-            455
+            501,
+            259
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "guard",
+          "type": "bat",
           "pos": [
-            368,
-            350
+            598,
+            359
           ],
           "hp": 1,
           "speed": 1
@@ -2041,44 +2167,26 @@
         {
           "type": "slime",
           "pos": [
-            192,
-            297
+            434,
+            445
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "wizard",
+          "type": "bat",
           "pos": [
-            431,
-            233
+            339,
+            295
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "wizard",
+          "type": "bat",
           "pos": [
-            220,
-            362
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            643,
-            403
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            545,
-            199
+            570,
+            422
           ],
           "hp": 1,
           "speed": 1
@@ -2182,28 +2290,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
-          "pos": [
-            226,
-            216
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "slime",
-          "pos": [
-            584,
-            399
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
           "type": "bat",
           "pos": [
-            208,
-            383
+            417,
+            276
           ],
           "hp": 1,
           "speed": 1
@@ -2211,17 +2301,8 @@
         {
           "type": "guard",
           "pos": [
-            353,
-            252
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            307,
-            262
+            404,
+            345
           ],
           "hp": 1,
           "speed": 1
@@ -2297,10 +2378,19 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "slime",
+          "type": "wizard",
           "pos": [
-            633,
-            346
+            499,
+            463
+          ],
+          "hp": 1,
+          "speed": 1
+        },
+        {
+          "type": "wizard",
+          "pos": [
+            519,
+            321
           ],
           "hp": 1,
           "speed": 1
@@ -2308,26 +2398,8 @@
         {
           "type": "guard",
           "pos": [
-            554,
-            355
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            484,
-            185
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            425,
-            470
+            219,
+            297
           ],
           "hp": 1,
           "speed": 1
@@ -2420,10 +2492,10 @@
       "is_exit": false,
       "enemies": [
         {
-          "type": "bat",
+          "type": "slime",
           "pos": [
-            135,
-            469
+            345,
+            402
           ],
           "hp": 1,
           "speed": 1
@@ -2431,26 +2503,8 @@
         {
           "type": "wizard",
           "pos": [
-            347,
-            442
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            443,
-            332
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "wizard",
-          "pos": [
-            661,
-            392
+            431,
+            243
           ],
           "hp": 1,
           "speed": 1
@@ -2458,8 +2512,8 @@
         {
           "type": "guard",
           "pos": [
-            377,
-            223
+            446,
+            189
           ],
           "hp": 1,
           "speed": 1
@@ -2467,17 +2521,8 @@
         {
           "type": "guard",
           "pos": [
-            571,
-            132
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            617,
-            275
+            148,
+            305
           ],
           "hp": 1,
           "speed": 1
@@ -2566,8 +2611,8 @@
         {
           "type": "slime",
           "pos": [
-            177,
-            204
+            564,
+            364
           ],
           "hp": 1,
           "speed": 1
@@ -2575,26 +2620,17 @@
         {
           "type": "bat",
           "pos": [
-            249,
-            246
+            204,
+            347
           ],
           "hp": 1,
           "speed": 1
         },
         {
-          "type": "guard",
+          "type": "wizard",
           "pos": [
-            545,
-            148
-          ],
-          "hp": 1,
-          "speed": 1
-        },
-        {
-          "type": "guard",
-          "pos": [
-            453,
-            454
+            536,
+            181
           ],
           "hp": 1,
           "speed": 1

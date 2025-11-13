@@ -5,17 +5,16 @@ import random
 from src.game_manager import GameManager
 from src.gui.gui_manager import GUIManager
 
-# 新增：BGM通道常量（Pygame默认有8个通道）
-BGM_CHANNEL = 0  # 专用通道播放BGM，避免与其他音效冲突
+BGM_CHANNEL = 0  
 
 def load_config():
     with open('config/game_config.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-# 新增：初始化音频并加载BGM
+
 def init_audio(config):
     pg.mixer.init()
-    # 加载所有BGM
+
     bgm = {}
     try:
         bgm['start'] = pg.mixer.Sound(config['bgm']['start'])
@@ -27,7 +26,6 @@ def init_audio(config):
         print(f"警告:加载BGM失败 - {e}")
     return bgm
 
-# 新增：播放BGM的函数
 def play_bgm(bgm, bgm_type, volume=0.5):
     channel = pg.mixer.Channel(BGM_CHANNEL)
     if bgm_type in bgm and not channel.get_busy():
